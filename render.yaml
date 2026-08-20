@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: fleetmind-ai-backend
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python data/generate_synthetic_data.py && python ml/train_predictive_model.py"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"

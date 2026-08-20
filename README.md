@@ -80,6 +80,41 @@ Ou use `start_frontend.ps1`.
 
 Acesse `http://localhost:8501`.
 
+## Publicar online (para compartilhar um link com colegas)
+
+Esta máquina bloqueia túneis (localtunnel/Cloudflare Tunnel — a rede corporativa
+derruba as portas que eles usam). O caminho que funciona em qualquer rede é
+hospedar o backend e o frontend na nuvem, gratuitamente:
+
+1. **Suba este repositório para o GitHub.**
+   ```bash
+   git remote add origin https://github.com/<seu-usuario>/fleetmind-ai.git
+   git push -u origin master
+   ```
+   (Crie o repositório vazio antes, em github.com/new — sem README/license, para
+   não conflitar com o que já existe aqui.)
+
+2. **Backend → [Render](https://render.com)** (gratuito)
+   - "New +" → "Web Service" → conecte o repositório do GitHub.
+   - O arquivo [render.yaml](render.yaml) já configura tudo automaticamente
+     (build gera a base sintética e treina os modelos; start sobe a API).
+   - Ao terminar o deploy, copie a URL pública (algo como
+     `https://fleetmind-ai-backend.onrender.com`).
+
+3. **Frontend → [Streamlit Community Cloud](https://share.streamlit.io)** (gratuito)
+   - "New app" → conecte o mesmo repositório.
+   - Main file path: `frontend/app.py`.
+   - Em "Advanced settings → Secrets", adicione:
+     ```toml
+     API_URL = "https://fleetmind-ai-backend.onrender.com"
+     ```
+     (usando a URL do passo 2).
+   - Deploy. Você recebe um link `https://<algo>.streamlit.app` — esse é o link
+     fixo que pode ser compartilhado com qualquer colega, de qualquer rede.
+
+> O plano gratuito do Render "dorme" após 15 min sem uso — a primeira requisição
+> depois disso demora ~30-60s para acordar o backend. Normal para demo de PBL.
+
 ## O que o protótipo demonstra
 
 - **Agente de Ação (autônomo)** — [backend/agent_engine.py](backend/agent_engine.py).
