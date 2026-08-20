@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+data/fleetmind.db
+ml/models/*.joblib
+.streamlit/secrets.toml
+pitch/node_modules/
+pitch/node-portable/
+pitch/cloudflared.exe
+pitch/package-lock.json
