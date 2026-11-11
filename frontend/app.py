@@ -21,17 +21,25 @@ import streamlit as st
 
 import os
 
+st.set_page_config(
+    page_title="FleetMind AI",
+    page_icon=str(Path(__file__).parent.parent / "assets" / "logo_icon.png"),
+    layout="wide",
+)
+
 
 def _get_api_url() -> str:
     """Em produção (Streamlit Community Cloud), defina API_URL em st.secrets ou
     na variável de ambiente, apontando para o backend hospedado (ex.: Render).
     Localmente, cai no padrão http://127.0.0.1:8000."""
+    if os.environ.get("API_URL"):
+        return os.environ["API_URL"]
     try:
         if "API_URL" in st.secrets:
             return st.secrets["API_URL"]
     except Exception:
         pass
-    return os.environ.get("API_URL", "http://127.0.0.1:8000")
+    return "http://127.0.0.1:8000"
 
 
 API_URL = _get_api_url()
@@ -47,12 +55,6 @@ def _logo_data_uri(filename: str) -> str | None:
 
 LOGO_ICON_URI = _logo_data_uri("logo_icon_transparent.png")
 LOGO_FULL_URI = _logo_data_uri("logo.png")
-
-st.set_page_config(
-    page_title="FleetMind AI",
-    page_icon=str(ASSETS_DIR / "logo_icon.png") if (ASSETS_DIR / "logo_icon.png").exists() else "🚚",
-    layout="wide",
-)
 
 # Paleta oficial da marca FleetMind AI
 FM_NAVY = "#001028"
@@ -142,9 +144,128 @@ except requests.exceptions.ConnectionError:
     )
     st.stop()
 
-tab_kanban, tab_overview, tab_vehicles, tab_drivers, tab_alerts, tab_copilot = st.tabs(
-    ["🗂️ Painel Operacional", "📊 Visão Geral", "🚛 Veículos", "🧑‍✈️ Motoristas", "🚨 Alertas", "🚚 Copiloto de IA"]
+tab_kanban, tab_roi, tab_overview, tab_vehicles, tab_drivers, tab_alerts, tab_copilot = st.tabs(
+    ["🗂️ Painel Operacional", "💰 Economia & ROI", "📊 Visão Geral", "🚛 Veículos", "🧑‍✈️ Motoristas", "🚨 Alertas", "🚚 Copiloto de IA"]
 )
+
+# ---------------- ECONOMIA & ROI ----------------
+with tab_roi:
+    st.subheader("Onde o FleetMind AI gera economia para a empresa")
+    st.caption(
+        "Base de custos calculada a partir dos dados da frota (viagens, manutenção, alertas). "
+        "Os percentuais de redução são **hipóteses a validar em piloto** — ajuste os controles abaixo."
+    )
+
+    @st.cache_data(ttl=300)
+    def load_roi_data():
+        trips = pd.DataFrame(api_get("/trips", {"limit": 5000}))
+        maint = pd.DataFrame(api_get("/maintenance", {"limit": 5000}))
+        alerts = pd.DataFrame(api_get("/alerts", {"only_open": False, "limit": 5000}))
+        veh = pd.DataFrame(api_get("/vehicles"))
+        return trips, maint, alerts, veh
+
+    trips_df, maint_df, alerts_df, veh_df = load_roi_data()
+    n_veh = len(veh_df)
+
+    with st.expander("⚙️ Premissas (ajuste para a sua operação)", expanded=False):
+        a1, a2, a3 = st.columns(3)
+        diesel = a1.number_input("Preço do diesel (R$/l)", 4.0, 10.0, 6.2, 0.1)
+        kml = a2.number_input("Consumo médio (km/l)", 1.5, 5.0, 2.8, 0.1)
+        delay_cost = a3.number_input("Custo de atraso (R$/min)", 0.0, 50.0, 8.0, 1.0)
+        b1, b2, b3 = st.columns(3)
+        crash_cost = b1.number_input("Custo médio de sinistro (R$)", 10000, 500000, 80000, 5000)
+        crash_prob = b2.slider("% dos alertas críticos que viram sinistro", 0.0, 5.0, 1.0, 0.1) / 100
+        price_veh = b3.number_input("Assinatura FleetMind (R$/veículo/mês)", 100, 1500, 390, 10)
+        setup = st.number_input("Implantação e integrações (R$, ano 1)", 0, 1_000_000, 90_000, 10_000)
+
+    scenario = st.radio(
+        "Cenário de ganho (hipótese a validar em piloto)",
+        ["Conservador", "Base", "Otimista"], index=1, horizontal=True,
+    )
+    gain = {
+        "Conservador": dict(fuel=0.02, maint=0.30, delay=0.10, crash=0.10),
+        "Base": dict(fuel=0.04, maint=0.50, delay=0.20, crash=0.25),
+        "Otimista": dict(fuel=0.07, maint=0.70, delay=0.35, crash=0.40),
+    }[scenario]
+
+    # ---- Base de custos anualizada (FATO: vem dos dados da frota) ----
+    trips_df["start_time"] = pd.to_datetime(trips_df["start_time"], errors="coerce")
+    span_years = max((trips_df["start_time"].max() - trips_df["start_time"].min()).days / 365, 0.1)
+    km_year = trips_df["distance_km"].sum() / span_years
+    fuel_cost = km_year / kml * diesel
+    delay_min_year = trips_df["delay_minutes"].sum() / span_years
+
+    maint_df["date"] = pd.to_datetime(maint_df["date"], errors="coerce")
+    m_years = max((maint_df["date"].max() - maint_df["date"].min()).days / 365, 0.1)
+    fails_year = maint_df["failure_occurred"].sum() / m_years
+    corr = maint_df[maint_df["type"] == "corretiva"]["cost"].mean()
+    prev = maint_df[maint_df["type"] == "preventiva"]["cost"].mean()
+    corr = corr if pd.notna(corr) else maint_df["cost"].mean()
+    prev = prev if pd.notna(prev) else maint_df["cost"].mean() * 0.3
+    maint_year = maint_df["cost"].sum() / m_years
+
+    crit = alerts_df[alerts_df["severity"].isin(["critica", "alta"])]
+    crit_year = len(crit) / span_years
+
+    savings = {
+        "Combustível (rotas e condução)": fuel_cost * gain["fuel"],
+        "Manutenção corretiva evitada": fails_year * gain["maint"] * max(corr - prev, 0),
+        "Atrasos reduzidos": delay_min_year * delay_cost * gain["delay"],
+        "Sinistros evitados": crit_year * crash_prob * crash_cost * gain["crash"],
+    }
+    total_save = sum(savings.values())
+    invest_y1 = n_veh * price_veh * 12 + setup
+    net = total_save - invest_y1
+    roi = net / invest_y1 * 100 if invest_y1 else 0
+    payback = invest_y1 / (total_save / 12) if total_save else float("inf")
+
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Economia anual estimada", f"R$ {total_save/1e6:,.2f} mi")
+    k2.metric("Investimento (ano 1)", f"R$ {invest_y1/1e6:,.2f} mi")
+    k3.metric("ROI ano 1", f"{roi:,.0f}%")
+    k4.metric("Payback", f"{payback:,.1f} meses" if payback != float("inf") else "—")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("**Economia por alavanca (R$/ano)**")
+        sv = pd.DataFrame({"Alavanca": list(savings), "Economia": list(savings.values())}).sort_values("Economia")
+        fig_sv = px.bar(sv, x="Economia", y="Alavanca", orientation="h", text_auto=".3s",
+                        color_discrete_sequence=[FM_TEAL])
+        fig_sv.update_layout(height=340, margin=dict(l=0, r=0, t=10, b=0), xaxis_title="R$/ano", yaxis_title="")
+        st.plotly_chart(fig_sv, use_container_width=True)
+    with c2:
+        st.markdown("**Fluxo de caixa acumulado (12 meses)**")
+        months = list(range(0, 13))
+        cum = [(-setup) + (total_save / 12 - n_veh * price_veh) * m for m in months]
+        cf = pd.DataFrame({"Mês": months, "Saldo acumulado (R$)": cum})
+        fig_cf = px.area(cf, x="Mês", y="Saldo acumulado (R$)", color_discrete_sequence=[FM_TEAL])
+        fig_cf.add_hline(y=0, line_dash="dash", line_color=FM_GRAY_TEXT)
+        fig_cf.update_layout(height=340, margin=dict(l=0, r=0, t=10, b=0))
+        st.plotly_chart(fig_cf, use_container_width=True)
+
+    st.markdown("**Base de custo que o projeto ataca (dados da frota, anualizados)**")
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric("Combustível", f"R$ {fuel_cost/1e6:,.2f} mi", help=f"{km_year:,.0f} km/ano ÷ {kml} km/l × R$ {diesel}")
+    b2.metric("Manutenção", f"R$ {maint_year/1e6:,.2f} mi", help=f"{fails_year:,.0f} falhas/ano")
+    b3.metric("Atrasos", f"{delay_min_year/60:,.0f} h/ano", help=f"≈ R$ {delay_min_year*delay_cost/1e6:,.2f} mi")
+    b4.metric("Alertas altos/críticos", f"{crit_year:,.0f}/ano")
+
+    st.markdown("**Onde agir primeiro: veículos com maior risco e histórico de falha**")
+    cost_by_v = maint_df.groupby("vehicle_id")["cost"].sum().rename("custo_manutencao")
+    top = veh_df.merge(cost_by_v, left_on="id", right_index=True, how="left").fillna({"custo_manutencao": 0})
+    top["prioridade"] = top["failure_risk_score"] * (1 + top["custo_manutencao"] / max(top["custo_manutencao"].max(), 1))
+    st.dataframe(
+        top.sort_values("prioridade", ascending=False).head(10)[
+            ["plate", "model", "failure_risk_score", "failures_count", "custo_manutencao"]
+        ].rename(columns={"plate": "Placa", "model": "Modelo", "failure_risk_score": "Risco de falha (%)",
+                          "failures_count": "Falhas", "custo_manutencao": "Custo manutenção (R$)"}),
+        use_container_width=True, hide_index=True,
+    )
+    st.caption(
+        "FATO: custos-base (km, manutenção, atrasos, alertas) vêm dos dados da frota; combustível = 30–35% do custo "
+        "operacional (CNT/NTC&Logística). HIPÓTESE: percentuais de ganho por alavanca, custo de sinistro e preço "
+        "da assinatura — validar no piloto de 90–120 dias."
+    )
 
 # ---------------- KANBAN (PAINEL OPERACIONAL) ----------------
 with tab_kanban:
