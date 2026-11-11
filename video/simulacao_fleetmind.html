@@ -323,11 +323,14 @@ function matchOpt(tx,opts,free){
   });
   if(best<0&&free)best=0;return best;
 }
+function msg_sys(text,key){narrate(key==='ctr'?'Central → Marina':key==='fro'?'Assistente → Coutinho':'Em cena',text);}
 function narrate(who,txt){$('#nWho').textContent=who;$('#nTxt').textContent=txt;}
 function choice(key,prompt,opts,o,id){
   o=o||{};
   var panel=key==='call'?document.createElement('div'):$(PANEL[key]),box=$('#a-'+key);
-  if(key!=='call'){panel.classList.add('turn');narrate(S.mode==='play'?NAME[key]:'Em cena',prompt);
+  var sp=(o.say&&S.voice)?say(o.say,{pitch:key==='fro'?.95:1.05},id).catch(function(){}):Promise.resolve();
+  if(o.say)msg_sys(o.say,key);
+  if(key!=='call'){panel.classList.add('turn');narrate(S.mode==='play'?NAME[key]:'Em cena',o.say||prompt);
     if(S.mode==='play'&&panel.scrollIntoView&&window.innerWidth<1100)panel.scrollIntoView({behavior:'smooth',block:'start'});}
   return new Promise(function(res){
     var timer=null,rec=null,offs=[];
@@ -347,10 +350,11 @@ function choice(key,prompt,opts,o,id){
       var fail=function(){m.textContent='Microfone indisponível aqui: toque em uma opção';};
       var tryText=function(tx){
         var p=matchOpt(tx,opts,free);
-        if(p>=0){done(p,tx);return true;}
-        m.textContent='Não entendi “'+tx+'”. Fale de novo ou toque em uma opção.';return false;
+        if(p<0){p=o.auto||0;m.textContent='Entendi como: '+opts[p].label;}
+        done(p,tx);return true;
       };
       m.onclick=function(){
+        stopVoice();
         if(DICT){
           var got='';
           offs.push(DICT.onPartial(function(e){if(e.text)m.textContent='Ouvindo: '+e.text;}));
@@ -368,7 +372,7 @@ function choice(key,prompt,opts,o,id){
       box.appendChild(m);
     }
     if(S.mode==='watch'){
-      timer=setTimeout(function(){if(id!==S.run)return;var i=o.auto||0;var bs=box.querySelectorAll('.btn');if(bs[i])bs[i].style.borderColor='var(--teal-l)';setTimeout(function(){if(id===S.run)done(i);},500/S.speed);},1800/S.speed);
+      sp.then(function(){if(id!==S.run)return;timer=setTimeout(function(){if(id!==S.run)return;var i=o.auto||0;var bs=box.querySelectorAll('.btn');if(bs[i])bs[i].style.borderColor='var(--teal-l)';setTimeout(function(){if(id===S.run)done(i);},500/S.speed);},1800/S.speed);});
     }
   }).then(function(r){guard(id);return r;});
 }
@@ -396,7 +400,7 @@ async function day(id){
   /* 09:42 acidente */
   await sleep(500,id);
   narrate('09:42','Ricardo vê um acidente na pista.');
-  r=await choice('cab','Você vê um acidente na pista. Relate por voz, sem tirar a mão do volante.',[{label:'Acidente à frente, a pista está parcialmente interditada.',kw:['acident','interdit','pista']},{label:'Tem um caminhão atravessado na pista, bateu agora.',kw:['atravess','bateu','caminh']}],{mic:true},id);
+  r=await choice('cab','Você vê um acidente na pista. Relate por voz, sem tirar a mão do volante.',[{label:'Acidente à frente, a pista está parcialmente interditada.',kw:['acident','interdit','pista']},{label:'Tem um caminhão atravessado na pista, bateu agora.',kw:['atravess','bateu','caminh']}],{mic:true,say:'Ricardo, o sensor detectou parada brusca no trânsito à frente. O que está acontecendo? Relate pelo microfone.'},id);
   msg('me',r.text);if(S.mode==='watch')await say(r.text,{pitch:.65},id);
   S.min=P(9,42);$('#clock').firstChild.nodeValue='09:42';setVel(40);
   $('#acc').setAttribute('opacity','1');
@@ -411,7 +415,7 @@ async function day(id){
   tl('acc','ia','Calculou desvio de +14 km e enviou aos 2 veículos.');
   await sleep(900,id);
   narrate('09:44','A IA agiu sozinha: avisou a rede e enviou o desvio. A central só acompanha.');
-  r=await choice('ctr','A IA já tratou o acidente. Abra o caso para conferir o que ela fez.',[{label:'Abrir o caso e conferir a linha do tempo'}],{},id);
+  r=await choice('ctr','A IA já tratou o acidente. Abra o caso para conferir o que ela fez.',[{label:'Abrir o caso e conferir a linha do tempo'}],{say:'Marina, a IA tratou um acidente crítico na BR-050. Ela avisou dois veículos e enviou o desvio. Quer abrir o caso para conferir? Diga: abrir o caso.'},id);
   openCard('acc');
   await clockTo(P(9,50),2600,id);
   tl('acc','m','Os 2 motoristas confirmaram a nova rota.');S.cnt.desv=2;move('acc','res');S.cnt.res++;renderBoard('acc');
@@ -430,11 +434,11 @@ async function day(id){
   tl('fad','ia','Escalou o caso para operador humano.');S.cnt.esc=1;move('fad','esc');beep(880);
   narrate('11:20','A IA decidiu o que podia. Agora precisa de uma pessoa.');
   var tries=0,ok=false;
-  r=await choice('ctr','Caso escalado a você. O que faz?',[{label:'Ligar para o Ian agora',cls:'warm',kw:['ligar','ligo','agora','telefone']},{label:'Aguardar mais 5 minutos',kw:['aguard','esper','minutos']}],{},id);
+  r=await choice('ctr','Caso escalado a você. O que faz?',[{label:'Ligar para o Ian agora',cls:'warm',kw:['ligar','ligo','agora','telefone']},{label:'Aguardar mais 5 minutos',kw:['aguard','esper','minutos']}],{say:'Marina, atenção: caso escalado. O motorista Ian Peixoto está com fadiga alta e não confirmou a orientação da IA em cinco minutos. O que você faz? Diga: ligar agora, ou aguardar.'},id);
   if(r.i===1){
     tl('fad','h','Optou por aguardar 5 minutos.');await clockTo(P(11,25),1500,id);
     tl('fad','ia','Ainda sem resposta do motorista. Risco segue alto.');
-    await choice('ctr','Ian continua sem responder. Fadiga alta pede ação agora.',[{label:'Ligar para o Ian agora',cls:'warm'}],{},id);
+    await choice('ctr','Ian continua sem responder. Fadiga alta pede ação agora.',[{label:'Ligar para o Ian agora',cls:'warm'}],{say:'Marina, o Ian continua sem responder e a fadiga é alta. Diga: ligar agora.'},id);
   }
   /* ligação */
   $('#ovCall').hidden=false;$('#callLines').innerHTML='';
@@ -445,7 +449,7 @@ async function day(id){
   line('ian','Ian','Tô com um pouco de sono, Marina. Já faz umas quatro horas que eu dirijo.');
   await say('Tô com um pouco de sono, Marina. Já faz umas quatro horas que eu dirijo.',{pitch:.6},id);
   while(!ok){
-    r=await choice('call','O que você diz ao Ian?',[{label:'Pare no próximo ponto de apoio e descanse 15 minutos.',cls:'pri',kw:['pare','parar','descans','pausa','posto']},{label:'Siga com atenção até o destino.',kw:['siga','seguir','atenc','destino']}],{},id);
+    r=await choice('call','O que você diz ao Ian?',[{label:'Pare no próximo ponto de apoio e descanse 15 minutos.',cls:'pri',kw:['pare','parar','descans','pausa','posto']},{label:'Siga com atenção até o destino.',kw:['siga','seguir','atenc','destino']}],{say:'Marina, o Ian disse que está com sono. O que você responde a ele? Por exemplo: pare no próximo posto e descanse quinze minutos.'},id);
     if(r.i===0){ok=true;line('','Marina',r.text);await say(r.text,{pitch:1.05},id);}
     else{line('','Marina',r.text);await say(r.text,{pitch:1.05},id);
       line('','IA FleetMind','Com fadiga alta, a recomendação é parar. Reforce a pausa.');$('#callLines').lastChild.style.background='#0f3340';
@@ -466,11 +470,11 @@ async function day(id){
   fAlert('<div class="alert"><span class="pill">Manutenção urgente · crítico</span><h4>VIF-0484 com risco de falha</h4><div class="empty" style="padding:0">Scania R450 · Ricardo</div><div class="sig"><div><b>100%</b><i>risco de falha previsto</i></div><div><b>17,5 psi</b><i>pressão mínima do óleo</i></div><div><b>110 °C</b><i>temperatura do motor</i></div><div><b>80%</b><i>desgaste dos freios</i></div></div><div class="empty" style="padding:0">Ação sugerida pela IA: inspeção preventiva hoje, às 16h, no destino.</div></div>');
   narrate('14:00','A IA levou ao Coutinho só o alerta que importa, com a ação sugerida.');
   await say('Coutinho, alerta crítico: o caminhão VIF zero quatro oito quatro tem risco de falha previsto de cem por cento. Sugiro inspeção hoje às dezesseis horas.',{pitch:.95},id);
-  r=await choice('fro','Aprovar a inspeção sugerida pela IA?',[{label:'Aprovar inspeção às 16h em Campinas',cls:'pri',kw:['aprov','inspec','pode','autoriz']},{label:'Adiar para amanhã',kw:['adiar','adio','amanha','depois']}],{},id);
+  r=await choice('fro','Aprovar a inspeção sugerida pela IA?',[{label:'Aprovar inspeção às 16h em Campinas',cls:'pri',kw:['aprov','inspec','pode','autoriz']},{label:'Adiar para amanhã',kw:['adiar','adio','amanha','depois']}],{say:'Coutinho, você aprova a inspeção às dezesseis horas em Campinas? Diga: aprovar, ou: adiar.'},id);
   if(r.i===1){
     await say('Com risco de cem por cento, adiar pode causar parada na estrada. Mantenho o alerta aberto.',{pitch:.95},id);
     $('#fAns').innerHTML='<div class="ans"><b>IA:</b> Com risco de 100%, adiar pode causar parada não programada na estrada. O alerta continua aberto.</div>';
-    await choice('fro','O risco continua. A inspeção ainda está pendente.',[{label:'Aprovar inspeção às 16h em Campinas',cls:'pri'}],{},id);
+    await choice('fro','O risco continua. A inspeção ainda está pendente.',[{label:'Aprovar inspeção às 16h em Campinas',cls:'pri'}],{say:'Coutinho, o risco continua em cem por cento. Diga: aprovar a inspeção.'},id);
   }
   $('#fAns').innerHTML='';
   fAlert('<div class="alert done"><span class="pill ok">Inspeção agendada · 16h</span><h4>VIF-0484 aprovado por Coutinho</h4><div class="empty" style="padding:0">Manutenção avisada. Veículo fora da viagem de retorno até liberar.</div></div>');
@@ -478,13 +482,13 @@ async function day(id){
   await say('Aprovado. Avisei a manutenção e o motorista.',{pitch:.95},id);
   await copilot('Ricardo, a inspeção foi marcada para as 16h no destino. Pode seguir.',id);
   /* wow */
-  r=await choice('fro','Pergunte à IA o que explica a economia: por que um caminhão consome mais?',[{label:'Por que o consumo do VIF-0217 subiu?',cls:'pri',kw:['consumo','subiu','por que','porque']},{label:'Ir para o fechamento do dia',kw:['fechamento','fim','encerr','resumo']}],{auto:0},id);
+  r=await choice('fro','Pergunte à IA o que explica a economia: por que um caminhão consome mais?',[{label:'Por que o consumo do VIF-0217 subiu?',cls:'pri',kw:['consumo','subiu','por que','porque']},{label:'Ir para o fechamento do dia',kw:['fechamento','fim','encerr','resumo']}],{auto:0,say:'Coutinho, quer entender a economia? Pergunte por que o consumo do VIF zero dois um sete subiu, ou diga: fechamento do dia.'},id);
   if(r.i===0){
     narrate('14:10','Do alerta ao real economizado: anomalia, causa, impacto e ação.');
     var a='O consumo do VIF zero dois um sete subiu nove por cento nas últimas três viagens. Causa provável: pressão de pneus abaixo do ideal e muito tempo em marcha lenta. Impacto estimado: cerca de quatrocentos e dez reais por mês. Ação sugerida: calibrar os pneus e orientar o motorista.';
     $('#fAns').innerHTML='<div class="ans"><span class="pill sim">Dados simulados</span><p style="margin:8px 0 0"><b>Anomalia:</b> consumo do VIF-0217 +9% nas últimas 3 viagens.<br><b>Causa provável:</b> pneus abaixo da pressão ideal e marcha lenta longa.<br><b>Impacto estimado:</b> cerca de R$ 410 por mês.<br><b>Ação sugerida:</b> calibrar os pneus e orientar o motorista.</p></div>';
     await say(a,{pitch:.95},id);
-    await choice('fro','Aprovar a ação sugerida?',[{label:'Aprovar calibragem e orientação',cls:'pri'}],{},id);
+    await choice('fro','Aprovar a ação sugerida?',[{label:'Aprovar calibragem e orientação',cls:'pri'}],{say:'Coutinho, você aprova a ação sugerida: calibrar os pneus e orientar o motorista? Diga: aprovar.'},id);
     $('#fAns').firstChild.insertAdjacentHTML('beforeend','<p style="margin:8px 0 0"><span class="pill ok">Aprovado por Coutinho</span></p>');
     await sleep(1400,id);
   }
@@ -521,10 +525,43 @@ var QS=[
   {k:'valor',t:'Ficou claro o que a IA faz sozinha e quando chama uma pessoa?',lo:'Confuso',hi:'Muito claro'}
 ];
 var OPTS=[
-  {k:'voz',t:'Você usou a resposta por voz?',o:['Sim, funcionou','Sim, com problemas','Não usei']},
-  {k:'usaria',t:'Você usaria algo assim na sua operação?',o:['Sim','Talvez','Não']},
-  {k:'perfil',t:'Qual perfil mais chamou sua atenção?',o:['Ricardo (motorista)','Marina (operações)','Coutinho (frota)','Todos']}
+  {k:'voz',t:'Você usou a resposta por voz?',o:['Sim, funcionou','Sim, com problemas','Não usei'],kw:[['funcionou','sim'],['problema','com problemas'],['nao usei','nao','nunca']]},
+  {k:'usaria',t:'Você usaria algo assim na sua operação?',o:['Sim','Talvez','Não'],kw:[['sim','usaria','claro'],['talvez','depende'],['nao','jamais']]},
+  {k:'perfil',t:'Qual perfil mais chamou sua atenção?',o:['Ricardo (motorista)','Marina (operações)','Coutinho (frota)','Todos'],kw:[['ricardo','motorista'],['marina','operac'],['coutinho','frota'],['todos','todas','tudo']]}
 ];
+var NUM={um:1,uma:1,dois:2,duas:2,tres:3,quatro:4,cinco:5};
+function parseRate(tx){var t=' '+norm(tx)+' ',m=t.match(/[1-5]/);if(m)return m[0];for(var w in NUM){if(t.indexOf(' '+w+' ')>=0)return String(NUM[w]);}return null;}
+function setPressed(k,v){document.querySelectorAll('#svBody .rate').forEach(function(g){if(g.getAttribute('data-k')!==k)return;g.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-v')===v?'true':'false');});});}
+async function voiceSurvey(btn){
+  var id=S.run,cur=null,offs=[],rec=null;
+  function waitAnswer(maxMs,quietMs){return new Promise(function(res){var buf='',q=null,mx=setTimeout(fin,maxMs);function fin(){clearTimeout(mx);if(q)clearTimeout(q);cur=null;if(rec){try{rec.abort();}catch(e){}}res(buf.trim());}
+    cur=function(t){buf+=t;if(q)clearTimeout(q);q=setTimeout(fin,quietMs);};
+    if(!DICT&&SR){try{rec=new SR();rec.lang='pt-BR';rec.onresult=function(ev){if(cur)cur(ev.results[0][0].transcript);};rec.start();}catch(e){}}});}
+  if(DICT){offs.push(DICT.onFinal(function(e){if(cur)cur(e.text);}));
+    try{await DICT.start();}catch(er){btn.textContent='Microfone indisponível: use os botões';offs.forEach(function(f){f();});return;}}
+  btn.disabled=true;btn.textContent='Pesquisa por voz em andamento…';
+  stopVoice();
+  var items=QS.map(function(q){return {k:q.k,t:q.t+' Responda com uma nota de 1 a 5.',type:'rate'};})
+    .concat(OPTS.map(function(q){return {k:q.k,t:q.t+' Opções: '+q.o.join(', ')+'.',type:'opt',q:q};}))
+    .concat([{k:'comentario',t:'Para finalizar: o que você melhoraria ou o que mais gostou?',type:'text'}]);
+  try{
+    await say('Vamos à pesquisa de satisfação. São poucas perguntas, e você responde falando.',{pitch:1.05},id);
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      narrate('Pesquisa · pergunta '+(i+1)+' de '+items.length,it.t);
+      await say(it.t,{pitch:1.05},id);
+      var tx=await waitAnswer(it.type==='text'?25000:12000,it.type==='text'?3500:1800);guard(id);
+      if(!tx){await say('Não ouvi resposta, vou pular esta.',{pitch:1.05},id);continue;}
+      if(it.type==='rate'){var v=parseRate(tx);if(v){SV[it.k]=v;setPressed(it.k,v);}else await say('Não entendi a nota, vou pular esta.',{pitch:1.05},id);}
+      else if(it.type==='opt'){var p=matchOpt(tx,it.q.o.map(function(o,j){return {label:o,kw:it.q.kw[j]};}),false);
+        if(p>=0){SV[it.k]=it.q.o[p];setPressed(it.k,it.q.o[p]);}else await say('Não entendi, vou pular esta.',{pitch:1.05},id);}
+      else{$('#svTxt').value=tx;}
+    }
+    await say('Obrigada pela avaliação! Enviando suas respostas.',{pitch:1.05},id);
+    $('#svSend').click();
+  }catch(e){if(!(e instanceof Cancel))console.error(e);}
+  finally{offs.forEach(function(f){try{f();}catch(e){}});if(DICT){try{DICT.stop().catch(function(){});}catch(e){}}}
+}
 function openSurvey(){
   SV={modo:S.mode==='play'?'participou':'assistiu'};
   var b=$('#svBody');
@@ -536,8 +573,9 @@ function openSurvey(){
   var h='<p style="margin-bottom:14px">Leva um minuto. Suas respostas ajudam o grupo a melhorar o FleetMind AI.</p>';
   QS.forEach(function(q){h+='<div class="q"><span class="ql">'+q.t+'</span><div class="rate" data-k="'+q.k+'">'+[1,2,3,4,5].map(function(n){return '<button type="button" aria-pressed="false" data-v="'+n+'">'+n+'</button>';}).join('')+'</div><div class="scale"><span>1 · '+q.lo+'</span><span>5 · '+q.hi+'</span></div></div>';});
   OPTS.forEach(function(q){h+='<div class="q"><span class="ql">'+q.t+'</span><div class="rate" data-k="'+q.k+'">'+q.o.map(function(o){return '<button type="button" aria-pressed="false" data-v="'+o+'">'+o+'</button>';}).join('')+'</div></div>';});
-  h+='<div class="q"><label for="svTxt">O que melhoraria ou o que mais gostou?</label><textarea id="svTxt" placeholder="Escreva livremente"></textarea></div><div class="row"><button class="btn pri" id="svSend">Enviar</button><button class="btn" id="svClose">Pular</button></div>';
+  h+='<div class="q"><label for="svTxt">O que melhoraria ou o que mais gostou?</label><textarea id="svTxt" placeholder="Escreva livremente"></textarea></div><div class="row"><button class="btn pri" id="svSend">Enviar</button>'+((DICT||SR)?'<button class="btn warm" id="svVoice">Responder por voz</button>':'')+'<button class="btn" id="svClose">Pular</button></div>';
   b.innerHTML=h;
+  if($('#svVoice'))$('#svVoice').onclick=function(){voiceSurvey(this);};
   b.querySelectorAll('.rate').forEach(function(g){g.addEventListener('click',function(e){var x=e.target.closest('button');if(!x)return;g.querySelectorAll('button').forEach(function(y){y.setAttribute('aria-pressed','false');});x.setAttribute('aria-pressed','true');SV[g.getAttribute('data-k')]=x.getAttribute('data-v');});});
   $('#svClose').onclick=function(){$('#ovSurvey').hidden=true;};
   $('#svSend').onclick=function(){
