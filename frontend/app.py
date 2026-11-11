@@ -34,11 +34,17 @@ def _get_api_url() -> str:
     Localmente, cai no padrão http://127.0.0.1:8000."""
     if os.environ.get("API_URL"):
         return os.environ["API_URL"]
-    try:
-        if "API_URL" in st.secrets:
-            return st.secrets["API_URL"]
-    except Exception:
-        pass
+    # st.secrets mostra um aviso vermelho quando nao ha secrets.toml; so o consulta
+    # na nuvem (Streamlit Cloud monta o app em /mount/src) ou se o arquivo existir.
+    has_secrets = Path("/mount/src").exists() or any(
+        p.exists() for p in (Path.home() / ".streamlit" / "secrets.toml", Path(".streamlit") / "secrets.toml")
+    )
+    if has_secrets:
+        try:
+            if "API_URL" in st.secrets:
+                return st.secrets["API_URL"]
+        except Exception:
+            pass
     return "http://127.0.0.1:8000"
 
 
@@ -55,6 +61,16 @@ def _logo_data_uri(filename: str) -> str | None:
 
 LOGO_ICON_URI = _logo_data_uri("logo_icon_transparent.png")
 LOGO_FULL_URI = _logo_data_uri("logo.png")
+
+# O Streamlit declara lang="en"; o tradutor automatico do navegador entao "traduz" os
+# rotulos em portugues (ex.: "Payback" virava "Vingança"). Marca a pagina como pt-BR.
+import streamlit.components.v1 as components
+
+components.html(
+    "<script>const d=window.parent.document.documentElement;d.lang='pt-BR';"
+    "d.setAttribute('translate','no');d.classList.add('notranslate');</script>",
+    height=0,
+)
 
 # Paleta oficial da marca FleetMind AI
 FM_NAVY = "#001028"
@@ -318,7 +334,7 @@ with tab_roi:
     k1.metric("Economia anual estimada", f"R$ {total_save/1e6:,.2f} mi")
     k2.metric("Investimento (ano 1)", f"R$ {invest_y1/1e6:,.2f} mi")
     k3.metric("ROI ano 1", f"{roi:,.0f}%")
-    k4.metric("Payback", f"{payback:,.1f} meses" if payback != float("inf") else "—")
+    k4.metric("Prazo de retorno", f"{payback:,.1f} meses" if payback != float("inf") else "—")
 
     c1, c2 = st.columns(2)
     with c1:
