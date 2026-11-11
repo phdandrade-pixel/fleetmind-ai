@@ -5,7 +5,7 @@ const NAVY = "001028", NAVY2 = "0C2440", TEAL = "007880", TEAL_L = "4FD1D9";
 const WARM = "C9622A", WHITE = "FFFFFF", GRAY_BG = "E9EEF2", GRAY_LN = "D6DEE4";
 const MUTED = "4A5560", MUTED_D = "AFC3CC";
 const HEAD = "Cambria", BODY = "Calibri";
-const TOTAL = 15;
+const TOTAL = 17;
 
 const LOGO = "../assets/logo_icon_transparent.png";
 const LOGO_W = "../assets/logo_icon_white.png";
@@ -104,7 +104,7 @@ function src(s, t, dark) {
   const s = slide(false);
   kicker(s, "A solução");
   title(s, "Uma camada de inteligência sobre o que a empresa já tem");
-  const st = [["DADOS", "Telemetria, GPS, câmeras, ERP/TMS, trânsito, clima"], ["IA", "Correlaciona eventos internos e externos"], ["PREVISÃO", "Antecipa falhas e riscos"], ["DECISÃO", "Recomenda a melhor ação"], ["AÇÃO", "Executa, notifica e aprende"]];
+  const st = [["DADOS", "Telemetria, GPS, câmeras, ERP/TMS, trânsito, clima, radares e notícias"], ["IA", "Correlaciona eventos internos e externos"], ["PREVISÃO", "Antecipa falhas e riscos"], ["DECISÃO", "Recomenda a melhor ação"], ["AÇÃO", "Executa, notifica e aprende"]];
   st.forEach((x, i) => {
     const bx = 0.6 + i * 2.45, last = i === 4;
     card(s, bx, 2.3, 2.2, 2.4, last ? TEAL : GRAY_BG, last ? TEAL : GRAY_LN);
@@ -151,6 +151,58 @@ function src(s, t, dark) {
   });
   s.addText("Cada viagem torna toda a plataforma mais inteligente: é o efeito de rede que protege a vantagem competitiva.", { x: 0.6, y: 5.5, w: 12, h: 0.8, fontFace: HEAD, italic: true, fontSize: 18, color: TEAL_L, margin: 0, lineSpacing: 24 });
   note(s, "Agente e rede (45s). O motorista relata por voz o que ve na via. A IA classifica e propaga o risco para os outros veiculos da rota, que recebem o desvio automaticamente. Quanto mais veiculos, mais inteligente a rede.");
+}
+
+/* 6A ECOSSISTEMA DE DADOS */
+{
+  const s = slide(false);
+  kicker(s, "Ecossistema de dados");
+  title(s, "Um cérebro conectado a tudo que afeta a viagem");
+  const cats = [
+    ["Via e infraestrutura", "OpenStreetMap, DNIT, obras, pedágios, pontos de apoio", 0],
+    ["Trânsito", "Waze, Google, TomTom, PRF, eventos e greves", 0],
+    ["Radares e fiscalização", "Radarbot, concessionárias, DER, balanças", 0],
+    ["Clima", "INMET, CPTEC, Climatempo, radar de chuva, vento e neblina", 1],
+    ["Desastres e emergências", "Defesa Civil, Cemaden, alagamentos, interdições", 0],
+    ["Segurança e carga", "Roubo de carga por trecho, seguradoras, risco da rota", 0],
+    ["Mídias sociais e notícias", "X, Telegram, portais, rádios de trânsito", 0],
+    ["Veículo", "Telemetria, OBD, câmeras ADAS/DMS, sensores IoT", 1],
+    ["Motorista", "Jornada, fadiga, comportamento, relatos por voz", 1],
+    ["Operação", "TMS, ERP, manutenção, abastecimento, janelas de entrega", 1],
+    ["Mercado e regulação", "ANP, preço de frete, ANTT, CONTRAN, LGPD", 0],
+    ["Rede FleetMind", "Relatos dos motoristas e histórico de ações da IA", 1],
+  ];
+  cats.forEach((c, i) => {
+    const col = i % 4, row = Math.floor(i / 4);
+    const x = 0.6 + col * 3.05, y = 2.0 + row * 1.5, live = c[2] === 1;
+    card(s, x, y, 2.9, 1.35, live ? "E3F1F2" : GRAY_BG, live ? TEAL : GRAY_LN);
+    s.addText(c[0], { x: x + 0.15, y: y + 0.08, w: 2.6, h: 0.35, fontFace: HEAD, bold: true, fontSize: 13.5, color: NAVY, margin: 0 });
+    s.addText(c[1], { x: x + 0.15, y: y + 0.45, w: 2.6, h: 0.55, fontFace: BODY, fontSize: 10.5, color: MUTED, margin: 0, lineSpacing: 13 });
+    s.addText(live ? "NO PROTÓTIPO (DADOS SIMULADOS)" : "PRÓXIMAS INTEGRAÇÕES", { x: x + 0.15, y: y + 1.02, w: 2.6, h: 0.25, fontFace: BODY, bold: true, fontSize: 8.5, charSpacing: 1, color: live ? TEAL : MUTED, margin: 0 });
+  });
+  s.addText("Mais de 100 bases mapeadas pela equipe. As integrações reais dependem de acordos, licenças e conformidade com a LGPD.", { x: 0.6, y: 6.5, w: 12, h: 0.4, fontFace: BODY, italic: true, fontSize: 12, color: MUTED, margin: 0 });
+  note(s, "Ecossistema de dados (45s). O valor do FleetMind cresce com a quantidade de fontes conectadas: via, transito, radares, clima, desastres, seguranca, redes sociais, veiculo, motorista e operacao. Cinco dessas familias ja existem no prototipo com dados simulados. As demais sao o plano de integracao, sujeito a acordos e a LGPD.");
+}
+
+/* 6B DE DADOS A ROTA */
+{
+  const s = slide(true);
+  kicker(s, "Mais fontes, melhor decisão", true);
+  title(s, "Cada nova fonte deixa a rota mais segura e o alerta mais cedo", true);
+  const st = [["Fontes", "Radares, trânsito, clima, desastres, notícias e rede de motoristas"], ["Fusão e verificação", "Cruza as fontes e só confirma o que aparece em mais de uma"], ["Risco por trecho", "Cada trecho ganha um score que muda a cada minuto"], ["Ação", "Alerta ao motorista, desvio automático e aviso à operação"]];
+  st.forEach((x, i) => {
+    const bx = 0.6 + i * 3.1, last = i === 3;
+    s.addShape("roundRect", { x: bx, y: 2.2, w: 2.85, h: 1.9, rectRadius: 0.1, fill: { color: last ? TEAL : NAVY2 }, line: { color: last ? TEAL : "24406E", width: 1 } });
+    s.addText(x[0], { x: bx + 0.2, y: 2.35, w: 2.45, h: 0.45, fontFace: HEAD, bold: true, fontSize: 16, color: WHITE, margin: 0 });
+    s.addText(x[1], { x: bx + 0.2, y: 2.85, w: 2.45, h: 1.15, fontFace: BODY, fontSize: 12, color: last ? "E3F1F2" : MUTED_D, margin: 0, lineSpacing: 15 });
+    if (!last) s.addText("→", { x: bx + 2.82, y: 2.85, w: 0.3, h: 0.5, align: "center", fontSize: 18, bold: true, color: TEAL_L, margin: 0 });
+  });
+  s.addShape("roundRect", { x: 0.6, y: 4.45, w: 12.1, h: 1.15, rectRadius: 0.1, fill: { color: NAVY2 }, line: { color: "24406E", width: 1 } });
+  s.addText([{ text: "Exemplo: ", options: { bold: true, color: TEAL_L } }, { text: "radar móvel reportado, chuva forte à frente e um acidente citado em rede social. Juntas, as três fontes elevam o risco do trecho, e o motorista recebe o desvio antes de chegar.", options: { color: WHITE } }], { x: 0.9, y: 4.45, w: 11.5, h: 1.15, valign: "middle", fontFace: BODY, fontSize: 14, margin: 0, lineSpacing: 19 });
+  const b = ["Alerta antecipado ao motorista", "Rota mais segura e mais rápida", "Operação decide com contexto"];
+  b.forEach((t, i) => s.addText(t, { x: 0.6 + i * 4.1, y: 5.95, w: 3.9, h: 0.5, fontFace: HEAD, bold: true, fontSize: 15, color: TEAL_L, margin: 0 }));
+  s.addText("Informação de rede social só vira alerta depois de confirmação cruzada, para evitar boato.", { x: 0.6, y: 6.5, w: 12, h: 0.4, fontFace: BODY, italic: true, fontSize: 12, color: MUTED_D, margin: 0 });
+  note(s, "De dados a rota (40s). As fontes sao fundidas e verificadas, cada trecho recebe um score de risco e o sistema age: alerta o motorista, envia o desvio e avisa a operacao. Quanto mais fontes, mais cedo o alerta. Informacao de rede social so vira alerta com confirmacao cruzada.");
 }
 
 /* 7 IA PREDITIVA */
@@ -306,7 +358,7 @@ function src(s, t, dark) {
   title(s, "Os três riscos principais e como tratamos cada um");
   const r = [
     ["Adoção e confiança", "Motoristas e gestores podem desconfiar de decisões da IA.", "Piloto com métricas abertas, humano com decisão final e IA que recomenda antes de agir sozinha."],
-    ["Qualidade e integração de dados", "Telemetria de fabricantes diferentes e conectividade instável nas rodovias.", "APIs abertas com parceiros de telemetria, MVP só com dados essenciais e tratamento de dados faltantes."],
+    ["Qualidade e integração de dados", "Telemetria de fabricantes diferentes e conectividade instável nas rodovias.", "APIs abertas com parceiros, MVP só com dados essenciais e verificação cruzada de fontes externas, como redes sociais."],
     ["Responsabilidade e regulação", "Quem responde por uma recomendação da IA? Dados de motoristas exigem LGPD.", "Humano decide nas ações críticas, contratos claros e conformidade com a LGPD desde o desenho."],
   ];
   r.forEach((c, i) => {
