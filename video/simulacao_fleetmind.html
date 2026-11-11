@@ -224,9 +224,10 @@ function say(text,o,id){
     try{
       var u=new SpeechSynthesisUtterance(text);
       var v=voices.filter(function(x){return /pt[-_]BR/i.test(x.lang);})[0]||voices.filter(function(x){return /^pt/i.test(x.lang);})[0];
-      if(v)u.voice=v;u.lang='pt-BR';u.pitch=o.pitch||1;u.rate=(o.rate||1.02)*Math.min(S.speed,1.6);
+      if(v)u.voice=v;u.lang='pt-BR';u.pitch=o.pitch||1;u.rate=(o.rate||1.02)*Math.min(S.speed,2.5);
       u.onend=fin;u.onerror=fin;window.speechSynthesis.speak(u);
-      setTimeout(fin,est*2.2+2500);
+      /* vozes online do navegador ignoram a velocidade: acima de 1x, corta a fala no tempo acelerado */
+      setTimeout(function(){if(!done){if(S.speed>1)stopVoice();fin();}},S.speed>1?est*1.5+700:est*2.2+2500);
     }catch(e){setTimeout(fin,est);}
   }).then(function(){guard(id);});
 }
@@ -595,7 +596,7 @@ $('#endAgain').onclick=function(){reset();$('#ovStart').hidden=false;};
 $('#endClose').onclick=function(){$('#ovEnd').hidden=true;};
 $('#bMode').onclick=function(){start(S.mode==='play'?'watch':'play');};
 $('#bVoice').onclick=function(){S.voice=!S.voice;this.setAttribute('aria-pressed',S.voice);this.textContent=S.voice?'Voz ligada':'Voz desligada';if(!S.voice)stopVoice();};
-$('#bSpeed').onclick=function(){S.speed=S.speed===1?2:1;this.textContent='Velocidade '+S.speed+'x';this.setAttribute('aria-pressed',S.speed===2);};
+$('#bSpeed').onclick=function(){var L=[1,1.5,2,3];S.speed=L[(L.indexOf(S.speed)+1)%L.length];this.textContent='Velocidade '+S.speed+'x';this.setAttribute('aria-pressed',S.speed>1);};
 reset();
 })();
 </script>
