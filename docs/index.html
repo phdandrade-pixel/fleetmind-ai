@@ -1,0 +1,564 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Um Dia na Operação FleetMind</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: sala de controle com três painéis simultâneos (cabine, central, frota); o painel da vez acende. */
+:root{
+  --bg:#001028; --panel:#0A1D38; --panel2:#0E2646; --line:#1E3A63;
+  --fg:#E9EEF2; --mut:#93A5BD; --teal:#007880; --teal-l:#4FD1D9;
+  --warm:#F08A4B; --ok:#5CCB8A; --warn:#E6B84F; --rain:#3E6FA8;
+  --f-body:'Inter',system-ui,'Segoe UI',Arial,sans-serif;
+  --f-head:'Space Grotesk','Inter',system-ui,'Segoe UI',Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45;
+  padding-block:0 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--teal-l);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.brand{font-family:var(--f-head);font-weight:700;font-size:22px;letter-spacing:.3px}
+.brand span{color:var(--teal-l)}
+.clock{font-family:var(--f-head);font-size:34px;font-weight:700;color:var(--teal-l);font-variant-numeric:tabular-nums;letter-spacing:1px;margin-left:auto}
+.clock small{display:block;font:500 11px var(--f-body);color:var(--mut);letter-spacing:1.4px;text-transform:uppercase;text-align:right}
+.ctl{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-weight:600}
+.btn:hover{border-color:var(--teal-l)}
+.btn.pri{background:var(--teal);border-color:var(--teal)}
+.btn.pri:hover{background:#00909a}
+.btn.warm{background:#3a2216;border-color:#6b3d22;color:#FFD9C2}
+.btn[aria-pressed="true"]{border-color:var(--teal-l);color:var(--teal-l)}
+.narr{margin:14px 0;padding:14px 18px;background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;gap:14px;align-items:center;min-height:62px}
+.narr b{color:var(--teal-l);font-family:var(--f-head);white-space:nowrap}
+.narr p{margin:0;font-size:15px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:1100px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;transition:border-color .3s,box-shadow .3s;position:relative}
+.panel.turn{border-color:var(--teal-l);box-shadow:0 0 0 3px rgba(79,209,217,.18)}
+.ph{display:flex;align-items:center;gap:12px}
+.av{width:40px;height:40px;border-radius:50%;background:var(--teal);display:grid;place-items:center;font:700 17px var(--f-head);flex:none}
+.ph h2{margin:0;font:700 16px var(--f-head)}
+.ph small{color:var(--mut);display:block;font-size:12px}
+.badge{margin-left:auto;background:var(--teal-l);color:#00222a;font-weight:700;font-size:11px;letter-spacing:1px;padding:4px 10px;border-radius:999px;text-transform:uppercase;display:none}
+.panel.turn .badge{display:inline-block}
+.actions{display:flex;flex-direction:column;gap:8px;min-height:8px}
+.actions .btn{text-align:left;padding:11px 14px;line-height:1.3}
+.actions .hint{font-size:12px;color:var(--mut)}
+.mic{display:flex;align-items:center;gap:8px}
+/* cabine */
+.map{background:var(--panel2);border-radius:12px;padding:6px}
+.stat{display:flex;gap:10px}
+.stat div{flex:1;background:var(--panel2);border-radius:10px;padding:8px 12px}
+.stat b{display:block;font:700 20px var(--f-head);font-variant-numeric:tabular-nums}
+.stat i{font-style:normal;font-size:11px;color:var(--mut);letter-spacing:.8px;text-transform:uppercase}
+.chat{display:flex;flex-direction:column;gap:8px;height:250px;overflow-y:auto;padding-right:4px}
+.msg{max-width:88%;padding:9px 12px;border-radius:14px;font-size:14px;animation:in .3s ease-out}
+.msg.ia{background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.me{background:var(--teal);border-bottom-right-radius:4px;align-self:flex-end}
+.msg.sys{align-self:center;font-size:12px;color:var(--mut);background:none;padding:2px}
+.msg.warn{border-color:var(--warm)}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* central */
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:640px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.col{background:var(--panel2);border-radius:12px;padding:8px;min-height:250px;display:flex;flex-direction:column;gap:8px}
+.col h3{margin:0 0 2px;font:600 11px var(--f-body);letter-spacing:1px;text-transform:uppercase;color:var(--mut);display:flex;justify-content:space-between}
+.col h3 em{font-style:normal;color:var(--fg)}
+.col.c-esc h3{color:var(--warm)}
+.kc{background:#102B52;border:1px solid var(--line);border-left:4px solid var(--teal-l);border-radius:10px;padding:8px 10px;text-align:left;width:100%;animation:in .4s ease-out}
+.kc.crit{border-left-color:var(--warm)}
+.kc.ok{border-left-color:var(--ok)}
+.kc.flash{animation:flash 1.2s ease-out}
+@keyframes flash{0%{background:#1b4a6e}100%{background:#102B52}}
+.kc b{display:block;font-size:13px;line-height:1.25}
+.kc span{font-size:11px;color:var(--mut)}
+.drawer{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.drawer h4{margin:0 0 8px;font:700 14px var(--f-head);display:flex;justify-content:space-between;gap:8px}
+.tl{display:flex;flex-direction:column;gap:8px;max-height:230px;overflow-y:auto}
+.tl div{display:flex;gap:10px;font-size:13px}
+.tl em{font-style:normal;font-weight:700;color:var(--teal-l);min-width:42px;font-variant-numeric:tabular-nums}
+.tl .h em{color:var(--warm)}
+.tl .m em{color:var(--warn)}
+.who{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);display:block}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.kpis div{background:var(--panel2);border-radius:10px;padding:8px 10px}
+.kpis b{font:700 20px var(--f-head);display:block;font-variant-numeric:tabular-nums}
+.kpis i{font-style:normal;font-size:10.5px;color:var(--mut);letter-spacing:.6px;text-transform:uppercase}
+/* frota */
+.alert{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--warm);border-radius:12px;padding:12px 14px;animation:in .4s ease-out}
+.alert.done{border-left-color:var(--ok)}
+.alert h4{margin:4px 0 2px;font:700 16px var(--f-head)}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:#3a2216;color:var(--warm)}
+.pill.ok{background:#12372a;color:var(--ok)}
+.pill.sim{background:#2a2a14;color:var(--warn)}
+.sig{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.sig div{background:var(--panel);border-radius:8px;padding:8px 10px}
+.sig b{font:700 18px var(--f-head);display:block}
+.sig i{font-style:normal;font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+.empty{color:var(--mut);font-size:13px;padding:10px 2px}
+.ans{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;animation:in .4s ease-out}
+.ans b{color:var(--teal-l)}
+/* overlays */
+.ov{position:fixed;inset:0;background:rgba(0,10,26,.82);display:grid;place-items:center;padding:20px;z-index:20}
+.ov[hidden]{display:none!important}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 28px;max-width:560px;width:100%;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto}
+.box h1,.box h2{margin:0;font:700 26px var(--f-head);text-wrap:balance}
+.box p{margin:0;color:var(--mut)}
+.box .row{display:flex;gap:10px;flex-wrap:wrap}
+.sum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sum div{background:var(--panel2);border-radius:12px;padding:12px 14px}
+.sum b{font:700 26px var(--f-head);display:block}
+.sum i{font-style:normal;font-size:12px;color:var(--mut)}
+.call .line{padding:10px 14px;border-radius:12px;background:var(--panel2);animation:in .3s}
+.call .line.ian{background:#2a1f35}
+.call small{color:var(--mut);display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.q{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.q label,.q .ql{font-weight:600;font-size:14px}
+.rate{display:flex;gap:6px;flex-wrap:wrap}
+.rate button{min-width:44px;padding:9px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-weight:700}
+.rate button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal-l)}
+.q textarea{width:100%;min-height:80px;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;resize:vertical}
+.q .scale{display:flex;justify-content:space-between;font-size:11px;color:var(--mut)}
+#svFrame{width:100%;height:520px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.foot{margin-top:16px;color:var(--mut);font-size:12px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header>
+  <div class="brand">FleetMind <span>AI</span></div>
+  <div class="ctl">
+    <button class="btn" id="bMode" aria-pressed="false" title="Alterna entre assistir sozinho e decidir você mesmo">Modo: assistir</button>
+    <button class="btn" id="bVoice" aria-pressed="true">Voz ligada</button>
+    <button class="btn" id="bSpeed" aria-pressed="false">Velocidade 1x</button>
+    <button class="btn" id="bRestart">Recomeçar</button>
+  </div>
+  <div class="clock" id="clock">05:40<small>Goiânia → Campinas · 743 km</small></div>
+</header>
+
+<div class="narr"><b id="nWho">Simulação</b><p id="nTxt">Toque em “Iniciar o dia” para começar.</p></div>
+
+<main class="grid">
+  <!-- CABINE -->
+  <section class="panel" id="p-cab" aria-label="Cabine do motorista">
+    <div class="ph"><div class="av">R</div><div><h2>Ricardo · Motorista</h2><small>Scania R450 · VIF-0484 · só voz, sem tela</small></div><span class="badge">Sua vez</span></div>
+    <div class="map"><svg id="map" viewBox="0 0 600 150" width="100%" role="img" aria-label="Mapa da rota Goiânia a Campinas"></svg></div>
+    <div class="stat"><div><b id="sKm">0</b><i>km rodados</i></div><div><b id="sVel">0</b><i>km/h</i></div><div><b id="sTemp">—</b><i>óleo (psi)</i></div></div>
+    <div class="chat" id="chat" aria-live="polite"></div>
+    <div class="actions" id="a-cab"></div>
+  </section>
+
+  <!-- CENTRAL -->
+  <section class="panel" id="p-ctr" aria-label="Central de operações">
+    <div class="ph"><div class="av">M</div><div><h2>Marina · Gestora de operações</h2><small>Painel Operacional · 48 veículos em rota</small></div><span class="badge">Sua vez</span></div>
+    <div class="kpis">
+      <div><b id="kDesv">0</b><i>desvios da IA</i></div>
+      <div><b id="kEsc">0</b><i>escalados a mim</i></div>
+      <div><b id="kRes">2</b><i>resolvidos hoje</i></div>
+      <div><b id="kAt">0</b><i>em atuação</i></div>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="drawer" id="drawer" hidden></div>
+    <div class="actions" id="a-ctr"></div>
+  </section>
+
+  <!-- FROTA -->
+  <section class="panel" id="p-fro" aria-label="Gestão de frota">
+    <div class="ph"><div class="av">C</div><div><h2>Coutinho · Gestor de frota</h2><small>Poucos alertas, priorizados por impacto</small></div><span class="badge">Sua vez</span></div>
+    <div id="fAlerts"><div class="empty">Sem alertas críticos neste momento. A IA só traz o que exige decisão.</div></div>
+    <div id="fAns"></div>
+    <div class="actions" id="a-fro"></div>
+  </section>
+</main>
+<p class="foot">Simulação com personas e dados fictícios. Os números de economia e emissões são cenário base do protótipo, a medir em piloto.</p>
+
+<div class="ov" id="ovStart">
+  <div class="box">
+    <h1>Um dia na operação FleetMind</h1>
+    <p>Acompanhe, em tempo real, Ricardo (motorista), Marina (operações) e Coutinho (frota). A IA age sozinha quando pode e chama uma pessoa quando precisa.</p>
+    <p>Em <b style="color:var(--fg)">Participar</b>, você assume cada pessoa na sua vez e decide. Em <b style="color:var(--fg)">Assistir</b>, tudo roda sozinho, com voz.</p>
+    <div class="row"><button class="btn pri" id="goPlay">Participar</button><button class="btn" id="goWatch">Assistir</button></div>
+  </div>
+</div>
+<div class="ov" id="ovCall" hidden><div class="box call"><h2>Ligação com Ian Peixoto</h2><div id="callLines" style="display:flex;flex-direction:column;gap:8px"></div><div class="actions" id="a-call"></div></div></div>
+<div class="ov" id="ovEnd" hidden>
+  <div class="box">
+    <h2>Fim do dia: 18:00</h2>
+    <div class="sum" id="sum"></div>
+    <p>Ilustração do cenário base, com dados simulados: cerca de <b style="color:var(--fg)">R$ 3 mil por dia</b> e <b style="color:var(--fg)">0,46 t de CO₂e por dia</b> (R$ 1,09 mi e 168,5 t por ano, divididos por 365). Os valores reais vêm do piloto.</p>
+    <div class="row"><button class="btn pri" id="endSurvey">Avaliar a experiência (1 min)</button><button class="btn" id="endAgain">Rever o dia</button><button class="btn" id="endClose">Fechar</button></div>
+  </div>
+</div>
+<div class="ov" id="ovSurvey" hidden>
+  <div class="box" id="svBox">
+    <h2>Pesquisa de satisfação</h2>
+    <div id="svBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var S={mode:'watch',voice:true,speed:1,run:0,min:340,cards:[],sel:null,cnt:{desv:0,esc:0,res:2,quebra:0}};
+var KM=[[340,0],[430,210],[582,330],[840,650],[960,743]];
+function kmAt(m){for(var i=1;i<KM.length;i++){if(m<=KM[i][0]){var a=KM[i-1],b=KM[i];return a[1]+(b[1]-a[1])*(m-a[0])/(b[0]-a[0]);}}return 743;}
+function hhmm(m){m=Math.round(m);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function P(h,m){return h*60+m;}
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+
+/* ---------- controle de execução ---------- */
+function Cancel(){}
+function guard(id){if(id!==S.run)throw new Cancel();}
+function sleep(ms,id){return new Promise(function(r){setTimeout(function(){r();},ms/S.speed);}).then(function(){guard(id);});}
+
+/* ---------- voz ---------- */
+var voices=[];
+function loadVoices(){try{voices=window.speechSynthesis.getVoices();}catch(e){voices=[];}}
+loadVoices();try{window.speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}
+function say(text,o,id){
+  o=o||{};
+  return new Promise(function(res){
+    var done=false;function fin(){if(!done){done=true;res();}}
+    var est=Math.max(1200,text.length*62)/S.speed;
+    if(!S.voice||!window.speechSynthesis){setTimeout(fin,est);return;}
+    try{
+      var u=new SpeechSynthesisUtterance(text);
+      var v=voices.filter(function(x){return /pt[-_]BR/i.test(x.lang);})[0]||voices.filter(function(x){return /^pt/i.test(x.lang);})[0];
+      if(v)u.voice=v;u.lang='pt-BR';u.pitch=o.pitch||1;u.rate=(o.rate||1.02)*Math.min(S.speed,1.6);
+      u.onend=fin;u.onerror=fin;window.speechSynthesis.speak(u);
+      setTimeout(fin,est*2.2+2500);
+    }catch(e){setTimeout(fin,est);}
+  }).then(function(){guard(id);});
+}
+function stopVoice(){try{window.speechSynthesis.cancel();}catch(e){}}
+var actx=null;
+function beep(f){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();var o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f||740;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.0001,actx.currentTime);g.gain.exponentialRampToValueAtTime(.12,actx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+.35);o.start();o.stop(actx.currentTime+.4);}catch(e){}}
+
+/* ---------- mapa ---------- */
+var X=function(km){return 30+540*km/743;};
+function drawMap(){
+  var h='';
+  h+='<rect x="'+X(190)+'" y="40" width="'+(X(245)-X(190))+'" height="70" rx="6" fill="var(--rain)" opacity=".35"/>';
+  h+='<text x="'+X(217)+'" y="34" fill="var(--mut)" font-size="10" text-anchor="middle">chuva km 210</text>';
+  h+='<path d="M'+X(0)+' 90 L'+X(743)+' 90" stroke="#5B7396" stroke-width="5" stroke-linecap="round" fill="none"/>';
+  h+='<path id="trav" d="M'+X(0)+' 90 L'+X(0)+' 90" stroke="var(--teal-l)" stroke-width="5" stroke-linecap="round" fill="none"/>';
+  h+='<g id="detour" opacity="0"><path d="M'+X(300)+' 90 C '+X(318)+' 135, '+X(352)+' 135, '+X(370)+' 90" stroke="var(--teal-l)" stroke-width="4" stroke-dasharray="7 6" fill="none"/></g>';
+  h+='<g id="acc" opacity="0"><circle cx="'+X(330)+'" cy="90" r="11" fill="var(--warm)"/><text x="'+X(330)+'" y="95" font-size="14" font-weight="700" text-anchor="middle" fill="#1a0b00">!</text></g>';
+  h+='<g id="oth" opacity="0"><circle cx="'+X(262)+'" cy="90" r="5" fill="var(--ok)"/><circle cx="'+X(282)+'" cy="90" r="5" fill="var(--ok)"/></g>';
+  h+='<circle id="truck" cx="'+X(0)+'" cy="90" r="8" fill="#fff" stroke="var(--teal)" stroke-width="4"/>';
+  h+='<text x="'+X(0)+'" y="136" fill="var(--mut)" font-size="10" text-anchor="middle">Goiânia</text><text x="'+X(743)+'" y="136" fill="var(--mut)" font-size="10" text-anchor="middle">Campinas</text>';
+  $('#map').innerHTML=h;
+}
+function setKm(km){
+  var x=X(km);$('#truck').setAttribute('cx',x);$('#trav').setAttribute('d','M'+X(0)+' 90 L'+x+' 90');$('#sKm').textContent=Math.round(km);
+}
+function setVel(v){$('#sVel').textContent=v;}
+
+/* ---------- relógio ---------- */
+function clockTo(target,ms,id){
+  var from=S.min,t0=performance.now(),dur=ms/S.speed;
+  return new Promise(function(res){
+    function f(now){
+      if(id!==S.run){res();return;}
+      var k=Math.min(1,(now-t0)/dur);S.min=from+(target-from)*k;
+      $('#clock').firstChild.nodeValue=hhmm(S.min);setKm(kmAt(S.min));
+      if(k<1)requestAnimationFrame(f);else res();
+    }
+    requestAnimationFrame(f);
+  }).then(function(){guard(id);});
+}
+
+/* ---------- cabine: chat ---------- */
+function msg(who,text,cls){
+  var d=document.createElement('div');d.className='msg '+who+(cls?' '+cls:'');d.textContent=text;
+  var c=$('#chat');c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function copilot(text,id,warn){msg('ia',text,warn?'warn':'');return say(text,{},id);}
+
+/* ---------- Kanban ---------- */
+var COLS=[['novo','Novo'],['ia','IA atuando'],['esc','Escalado'],['res','Resolvido']];
+function renderBoard(flashId){
+  var h='';
+  COLS.forEach(function(c){
+    var cs=S.cards.filter(function(x){return x.col===c[0];});
+    h+='<div class="col c-'+c[0]+'"><h3>'+c[1]+' <em>'+cs.length+'</em></h3>';
+    cs.forEach(function(x){
+      h+='<button class="kc '+(x.sev==='crit'?'crit':x.col==='res'?'ok':'')+(x.id===flashId?' flash':'')+'" data-id="'+x.id+'"><b>'+esc(x.title)+'</b><span>'+esc(x.sub)+' · '+x.time+'</span></button>';
+    });
+    h+='</div>';
+  });
+  $('#board').innerHTML=h;
+  $('#kDesv').textContent=S.cnt.desv;$('#kEsc').textContent=S.cnt.esc;$('#kRes').textContent=S.cnt.res;
+  $('#kAt').textContent=S.cards.filter(function(x){return x.col==='ia'||x.col==='esc'||x.col==='novo';}).length;
+  if(S.sel)renderDrawer();
+}
+function card(id){return S.cards.filter(function(x){return x.id===id;})[0];}
+function addCard(c){c.time=hhmm(S.min);c.tl=c.tl||[];S.cards.push(c);renderBoard(c.id);beep(660);}
+function move(id,col){var c=card(id);c.col=col;renderBoard(id);}
+function tl(id,actor,text){var c=card(id);c.tl.push({t:hhmm(S.min),a:actor,x:text});if(S.sel===id)renderDrawer();}
+function openCard(id){S.sel=id;renderDrawer();}
+function renderDrawer(){
+  var c=card(S.sel),d=$('#drawer');if(!c){d.hidden=true;return;}
+  var names={ia:'IA FleetMind',h:'Operadora',m:'Motorista'};
+  var h='<h4><span>'+esc(c.title)+'</span><button class="btn" id="dClose" style="padding:2px 10px">Fechar</button></h4><div class="tl">';
+  c.tl.forEach(function(e){h+='<div class="'+(e.a==='h'?'h':e.a==='m'?'m':'')+'"><em>'+e.t+'</em><span><span class="who">'+names[e.a]+'</span>'+esc(e.x)+'</span></div>';});
+  d.innerHTML=h+'</div>';d.hidden=false;
+  $('#dClose').onclick=function(){S.sel=null;d.hidden=true;};
+}
+$('#board').addEventListener('click',function(e){var b=e.target.closest('.kc');if(b)openCard(b.getAttribute('data-id'));});
+
+/* ---------- escolhas ---------- */
+var PANEL={cab:'#p-cab',ctr:'#p-ctr',fro:'#p-fro'};
+var NAME={cab:'Sua vez, Ricardo',ctr:'Sua vez, Marina',fro:'Sua vez, Coutinho'};
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+var DICT=null;
+try{if(window.claude&&window.claude.use){window.claude.use('dictation').then(function(d){DICT=d||null;}).catch(function(){});}}catch(e){}
+function norm(s){return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ');}
+function matchOpt(tx,opts,free){
+  var t=' '+norm(tx)+' ',best=-1,bs=0;
+  opts.forEach(function(op,i){
+    var sc=0;(op.kw||[]).forEach(function(k){if(t.indexOf(norm(k))>=0)sc+=3;});
+    norm(op.label).split(' ').forEach(function(w){if(w.length>3&&t.indexOf(' '+w)>=0)sc+=1;});
+    if(sc>bs){bs=sc;best=i;}
+  });
+  if(best<0&&free)best=0;return best;
+}
+function narrate(who,txt){$('#nWho').textContent=who;$('#nTxt').textContent=txt;}
+function choice(key,prompt,opts,o,id){
+  o=o||{};
+  var panel=key==='call'?document.createElement('div'):$(PANEL[key]),box=$('#a-'+key);
+  if(key!=='call'){panel.classList.add('turn');narrate(S.mode==='play'?NAME[key]:'Em cena',prompt);
+    if(S.mode==='play'&&panel.scrollIntoView&&window.innerWidth<1100)panel.scrollIntoView({behavior:'smooth',block:'start'});}
+  return new Promise(function(res){
+    var timer=null,rec=null,offs=[];
+    function done(i,text){
+      if(timer)clearTimeout(timer);if(rec){try{rec.abort();}catch(e){}}
+      offs.forEach(function(f){try{f();}catch(e){}});if(DICT){try{DICT.stop().catch(function(){});}catch(e){}}
+      box.innerHTML='';panel.classList.remove('turn');res({i:i,text:text||opts[i].label});
+    }
+    box.innerHTML='';
+    opts.forEach(function(op,i){
+      var b=document.createElement('button');b.className='btn'+(op.cls?' '+op.cls:'');b.textContent=op.label;
+      b.onclick=function(){done(i);};box.appendChild(b);
+    });
+    if((DICT||SR)&&S.mode==='play'){
+      var m=document.createElement('button');m.className='btn pri';m.textContent='Responder falando (microfone)';
+      var free=opts.length===1;
+      var fail=function(){m.textContent='Microfone indisponível aqui: toque em uma opção';};
+      var tryText=function(tx){
+        var p=matchOpt(tx,opts,free);
+        if(p>=0){done(p,tx);return true;}
+        m.textContent='Não entendi “'+tx+'”. Fale de novo ou toque em uma opção.';return false;
+      };
+      m.onclick=function(){
+        if(DICT){
+          var got='';
+          offs.push(DICT.onPartial(function(e){if(e.text)m.textContent='Ouvindo: '+e.text;}));
+          offs.push(DICT.onFinal(function(e){got+=e.text;if(!tryText(got.trim()))got='';}));
+          offs.push(DICT.onState(function(e){if(e.state==='idle'&&!m.textContent.match(/^Não entendi/))m.textContent='Responder falando (microfone)';}));
+          DICT.start().catch(function(er){
+            m.textContent=er&&er.code==='not_granted'?'Microfone bloqueado: toque em uma opção':'Microfone indisponível: toque em uma opção';
+          });
+          m.textContent='Ouvindo…';
+        }else{
+          try{rec=new SR();rec.lang='pt-BR';rec.onresult=function(ev){tryText(ev.results[0][0].transcript);};
+            rec.onerror=fail;rec.start();m.textContent='Ouvindo…';}catch(e){fail();}
+        }
+      };
+      box.appendChild(m);
+    }
+    if(S.mode==='watch'){
+      timer=setTimeout(function(){if(id!==S.run)return;var i=o.auto||0;var bs=box.querySelectorAll('.btn');if(bs[i])bs[i].style.borderColor='var(--teal-l)';setTimeout(function(){if(id===S.run)done(i);},500/S.speed);},1800/S.speed);
+    }
+  }).then(function(r){guard(id);return r;});
+}
+
+/* ---------- Frota ---------- */
+function fAlert(html){var d=document.createElement('div');d.innerHTML=html;$('#fAlerts').innerHTML='';$('#fAlerts').appendChild(d.firstElementChild);beep(520);}
+
+/* ---------- o dia ---------- */
+async function day(id){
+  S.min=340;
+  /* 05:40 saída */
+  setVel(0);$('#sTemp').textContent='42';
+  narrate('05:40','Ricardo sai de Goiânia. O copiloto fala com ele por voz.');
+  await sleep(900,id);setVel(85);
+  await copilot('Bom dia, Ricardo. Rota Goiânia a Campinas, setecentos e quarenta e três quilômetros. O caminhão está sem pendências.',id);
+  await copilot('Atenção: há previsão de chuva forte no quilômetro 210. Recomendo 80 por hora a partir dali.',id,true);
+  var r=await choice('cab','O copiloto avisou da chuva. Responda por voz ou toque na opção.',[{label:'Entendido, vou reduzir a velocidade.',kw:['entend','reduz','ok']},{label:'Beleza, valeu.',kw:['valeu','beleza']}],{mic:true},id);
+  msg('me',r.text);if(S.mode==='watch')await say(r.text,{pitch:.65},id);
+  await copilot('Combinado. Fico de olho no trecho e aviso se algo mudar.',id);
+  /* chuva */
+  await clockTo(P(7,10),4200,id);setVel(80);
+  narrate('07:10','Km 210: chuva forte. Ricardo segue a 80 km/h, como combinado.');
+  await copilot('Chuva forte à frente. Mantenha 80 por hora e distância dobrada.',id);
+  await clockTo(P(9,40),4200,id);setVel(78);
+  /* 09:42 acidente */
+  await sleep(500,id);
+  narrate('09:42','Ricardo vê um acidente na pista.');
+  r=await choice('cab','Você vê um acidente na pista. Relate por voz, sem tirar a mão do volante.',[{label:'Acidente à frente, a pista está parcialmente interditada.',kw:['acident','interdit','pista']},{label:'Tem um caminhão atravessado na pista, bateu agora.',kw:['atravess','bateu','caminh']}],{mic:true},id);
+  msg('me',r.text);if(S.mode==='watch')await say(r.text,{pitch:.65},id);
+  S.min=P(9,42);$('#clock').firstChild.nodeValue='09:42';setVel(40);
+  $('#acc').setAttribute('opacity','1');
+  await copilot('Relato recebido. Acidente, gravidade crítica. Vou avisar os veículos da mesma rota e calcular um desvio. Reduza e mantenha distância, Ricardo.',id,true);
+  addCard({id:'acc',title:'Acidente na BR-050, km 330',sub:'Ricardo · VIF-0484',col:'novo',sev:'crit'});
+  tl('acc','m','Relatou por voz: pista parcialmente interditada.');
+  await sleep(900,id);
+  tl('acc','ia','Classificou como crítico (acidente com interdição parcial).');move('acc','ia');
+  await sleep(1100,id);$('#oth').setAttribute('opacity','1');
+  tl('acc','ia','Avisou 2 veículos que passam pelo mesmo trecho (VIF-0217 e VIF-0391).');
+  await sleep(1100,id);$('#detour').setAttribute('opacity','1');
+  tl('acc','ia','Calculou desvio de +14 km e enviou aos 2 veículos.');
+  await sleep(900,id);
+  narrate('09:44','A IA agiu sozinha: avisou a rede e enviou o desvio. A central só acompanha.');
+  r=await choice('ctr','A IA já tratou o acidente. Abra o caso para conferir o que ela fez.',[{label:'Abrir o caso e conferir a linha do tempo'}],{},id);
+  openCard('acc');
+  await clockTo(P(9,50),2600,id);
+  tl('acc','m','Os 2 motoristas confirmaram a nova rota.');S.cnt.desv=2;move('acc','res');S.cnt.res++;renderBoard('acc');
+  setVel(70);
+  /* 11:15 fadiga */
+  await clockTo(P(11,15),3800,id);setVel(74);
+  addCard({id:'fad',title:'Fadiga alta: Ian Peixoto',sub:'Escore 64/100 · 1,3 excesso/viagem',col:'novo',sev:'crit'});
+  tl('fad','ia','Identificou fadiga alta (64/100) e 1,3 evento de excesso de velocidade por viagem.');
+  await sleep(700,id);move('fad','ia');
+  tl('fad','ia','Orientou o motorista: reduzir a velocidade e parar 15 min no próximo ponto de apoio.');
+  narrate('11:15','A IA orienta o Ian por voz e espera a confirmação.');
+  await sleep(2400,id);
+  await clockTo(P(11,20),1800,id);
+  tl('fad','ia','Sem confirmação em 5 minutos. Reenviou a orientação.');
+  await sleep(1200,id);
+  tl('fad','ia','Escalou o caso para operador humano.');S.cnt.esc=1;move('fad','esc');beep(880);
+  narrate('11:20','A IA decidiu o que podia. Agora precisa de uma pessoa.');
+  var tries=0,ok=false;
+  r=await choice('ctr','Caso escalado a você. O que faz?',[{label:'Ligar para o Ian agora',cls:'warm',kw:['ligar','ligo','agora','telefone']},{label:'Aguardar mais 5 minutos',kw:['aguard','esper','minutos']}],{},id);
+  if(r.i===1){
+    tl('fad','h','Optou por aguardar 5 minutos.');await clockTo(P(11,25),1500,id);
+    tl('fad','ia','Ainda sem resposta do motorista. Risco segue alto.');
+    await choice('ctr','Ian continua sem responder. Fadiga alta pede ação agora.',[{label:'Ligar para o Ian agora',cls:'warm'}],{},id);
+  }
+  /* ligação */
+  $('#ovCall').hidden=false;$('#callLines').innerHTML='';
+  function line(cls,who,txt){var d=document.createElement('div');d.className='line '+cls;d.innerHTML='<small>'+who+'</small>'+esc(txt);$('#callLines').appendChild(d);}
+  tl('fad','h','Marina ligou para o Ian.');
+  line('','Marina','Ian, aqui é a Marina, da central. Você está bem?');
+  await say('Ian, aqui é a Marina, da central. Você está bem?',{pitch:1.05},id);
+  line('ian','Ian','Tô com um pouco de sono, Marina. Já faz umas quatro horas que eu dirijo.');
+  await say('Tô com um pouco de sono, Marina. Já faz umas quatro horas que eu dirijo.',{pitch:.6},id);
+  while(!ok){
+    r=await choice('call','O que você diz ao Ian?',[{label:'Pare no próximo ponto de apoio e descanse 15 minutos.',cls:'pri',kw:['pare','parar','descans','pausa','posto']},{label:'Siga com atenção até o destino.',kw:['siga','seguir','atenc','destino']}],{},id);
+    if(r.i===0){ok=true;line('','Marina',r.text);await say(r.text,{pitch:1.05},id);}
+    else{line('','Marina',r.text);await say(r.text,{pitch:1.05},id);
+      line('','IA FleetMind','Com fadiga alta, a recomendação é parar. Reforce a pausa.');$('#callLines').lastChild.style.background='#0f3340';
+      await say('Com fadiga alta, a recomendação é parar. Reforce a pausa.',{},id);}
+  }
+  line('ian','Ian','Combinado. Vou parar no posto agora.');
+  await say('Combinado. Vou parar no posto agora.',{pitch:.6},id);
+  await sleep(700,id);$('#ovCall').hidden=true;
+  tl('fad','m','Ian confirmou a pausa de 15 minutos.');
+  await clockTo(P(11,30),1600,id);
+  tl('fad','h','Caso resolvido pela operadora.');S.cnt.res++;move('fad','res');
+  openCard('fad');
+  narrate('11:30','Caso resolvido: a IA decide o que pode e passa para uma pessoa o que precisa de uma pessoa.');
+  await sleep(2200,id);
+  /* 14:00 manutenção */
+  await clockTo(P(14,0),4500,id);setVel(72);$('#sTemp').textContent='17,5';
+  await copilot('Ricardo, detectei pressão de óleo abaixo do normal. Já avisei o gestor de frota. Siga com atenção até o próximo ponto de apoio.',id,true);
+  fAlert('<div class="alert"><span class="pill">Manutenção urgente · crítico</span><h4>VIF-0484 com risco de falha</h4><div class="empty" style="padding:0">Scania R450 · Ricardo</div><div class="sig"><div><b>100%</b><i>risco de falha previsto</i></div><div><b>17,5 psi</b><i>pressão mínima do óleo</i></div><div><b>110 °C</b><i>temperatura do motor</i></div><div><b>80%</b><i>desgaste dos freios</i></div></div><div class="empty" style="padding:0">Ação sugerida pela IA: inspeção preventiva hoje, às 16h, no destino.</div></div>');
+  narrate('14:00','A IA levou ao Coutinho só o alerta que importa, com a ação sugerida.');
+  await say('Coutinho, alerta crítico: o caminhão VIF zero quatro oito quatro tem risco de falha previsto de cem por cento. Sugiro inspeção hoje às dezesseis horas.',{pitch:.95},id);
+  r=await choice('fro','Aprovar a inspeção sugerida pela IA?',[{label:'Aprovar inspeção às 16h em Campinas',cls:'pri',kw:['aprov','inspec','pode','autoriz']},{label:'Adiar para amanhã',kw:['adiar','adio','amanha','depois']}],{},id);
+  if(r.i===1){
+    await say('Com risco de cem por cento, adiar pode causar parada na estrada. Mantenho o alerta aberto.',{pitch:.95},id);
+    $('#fAns').innerHTML='<div class="ans"><b>IA:</b> Com risco de 100%, adiar pode causar parada não programada na estrada. O alerta continua aberto.</div>';
+    await choice('fro','O risco continua. A inspeção ainda está pendente.',[{label:'Aprovar inspeção às 16h em Campinas',cls:'pri'}],{},id);
+  }
+  $('#fAns').innerHTML='';
+  fAlert('<div class="alert done"><span class="pill ok">Inspeção agendada · 16h</span><h4>VIF-0484 aprovado por Coutinho</h4><div class="empty" style="padding:0">Manutenção avisada. Veículo fora da viagem de retorno até liberar.</div></div>');
+  S.cnt.quebra=1;
+  await say('Aprovado. Avisei a manutenção e o motorista.',{pitch:.95},id);
+  await copilot('Ricardo, a inspeção foi marcada para as 16h no destino. Pode seguir.',id);
+  /* wow */
+  r=await choice('fro','Pergunte à IA o que explica a economia: por que um caminhão consome mais?',[{label:'Por que o consumo do VIF-0217 subiu?',cls:'pri',kw:['consumo','subiu','por que','porque']},{label:'Ir para o fechamento do dia',kw:['fechamento','fim','encerr','resumo']}],{auto:0},id);
+  if(r.i===0){
+    narrate('14:10','Do alerta ao real economizado: anomalia, causa, impacto e ação.');
+    var a='O consumo do VIF zero dois um sete subiu nove por cento nas últimas três viagens. Causa provável: pressão de pneus abaixo do ideal e muito tempo em marcha lenta. Impacto estimado: cerca de quatrocentos e dez reais por mês. Ação sugerida: calibrar os pneus e orientar o motorista.';
+    $('#fAns').innerHTML='<div class="ans"><span class="pill sim">Dados simulados</span><p style="margin:8px 0 0"><b>Anomalia:</b> consumo do VIF-0217 +9% nas últimas 3 viagens.<br><b>Causa provável:</b> pneus abaixo da pressão ideal e marcha lenta longa.<br><b>Impacto estimado:</b> cerca de R$ 410 por mês.<br><b>Ação sugerida:</b> calibrar os pneus e orientar o motorista.</p></div>';
+    await say(a,{pitch:.95},id);
+    await choice('fro','Aprovar a ação sugerida?',[{label:'Aprovar calibragem e orientação',cls:'pri'}],{},id);
+    $('#fAns').firstChild.insertAdjacentHTML('beforeend','<p style="margin:8px 0 0"><span class="pill ok">Aprovado por Coutinho</span></p>');
+    await sleep(1400,id);
+  }
+  /* fim */
+  await clockTo(P(16,0),3000,id);setVel(0);
+  await clockTo(P(18,0),2500,id);
+  narrate('18:00','Fim do dia.');
+  $('#sum').innerHTML='<div><b>'+S.cnt.desv+'</b><i>desvios automáticos feitos pela IA</i></div><div><b>1</b><i>caso escalado e resolvido</i></div><div><b>'+S.cnt.quebra+'</b><i>quebra evitada (estimada)</i></div><div><b>2</b><i>decisões humanas: Marina e Coutinho</i></div>';
+  $('#ovEnd').hidden=false;
+  await say('Fim do dia. A inteligência que move o transporte.',{},id);
+}
+function reset(){
+  S.run++;stopVoice();S.min=340;S.cards=[{id:'r1',title:'Parada programada confirmada',sub:'Frota 12',col:'res',time:'05:52',tl:[{t:'05:52',a:'ia',x:'Confirmou a parada programada com o motorista.'}]},{id:'r2',title:'Desvio de obra aplicado',sub:'VIF-0309',col:'res',time:'06:05',tl:[{t:'06:05',a:'ia',x:'Aplicou desvio de obra na BR-153 e avisou o motorista.'}]}];
+  S.sel=null;S.cnt={desv:0,esc:0,res:2,quebra:0};
+  $('#drawer').hidden=true;$('#chat').innerHTML='';$('#fAns').innerHTML='';
+  $('#fAlerts').innerHTML='<div class="empty">Sem alertas críticos neste momento. A IA só traz o que exige decisão.</div>';
+  ['#a-cab','#a-ctr','#a-fro','#a-call'].forEach(function(s){$(s).innerHTML='';});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('turn');});
+  $('#ovCall').hidden=true;$('#ovEnd').hidden=true;$('#ovSurvey').hidden=true;
+  drawMap();setKm(0);setVel(0);$('#sTemp').textContent='—';$('#clock').firstChild.nodeValue='05:40';renderBoard();
+  narrate('Simulação','Toque em “Iniciar o dia” para começar.');
+}
+function start(mode){
+  S.mode=mode;$('#bMode').textContent='Modo: '+(mode==='play'?'participar':'assistir');$('#bMode').setAttribute('aria-pressed',mode==='play');
+  reset();$('#ovStart').hidden=true;var id=S.run;
+  day(id).catch(function(e){if(!(e instanceof Cancel))console.error(e);});
+}
+/* ---------- pesquisa de satisfação ---------- */
+var FORM_URL='';/* link do Google Forms (modo embutido): https://docs.google.com/forms/d/e/ID/viewform?embedded=true */
+var SV={};
+var QS=[
+  {k:'geral',t:'Como foi a experiência geral?',lo:'Ruim',hi:'Ótima'},
+  {k:'realismo',t:'Parece uma operação real de frota?',lo:'Nada',hi:'Muito'},
+  {k:'valor',t:'Ficou claro o que a IA faz sozinha e quando chama uma pessoa?',lo:'Confuso',hi:'Muito claro'}
+];
+var OPTS=[
+  {k:'voz',t:'Você usou a resposta por voz?',o:['Sim, funcionou','Sim, com problemas','Não usei']},
+  {k:'usaria',t:'Você usaria algo assim na sua operação?',o:['Sim','Talvez','Não']},
+  {k:'perfil',t:'Qual perfil mais chamou sua atenção?',o:['Ricardo (motorista)','Marina (operações)','Coutinho (frota)','Todos']}
+];
+function openSurvey(){
+  SV={modo:S.mode==='play'?'participou':'assistiu'};
+  var b=$('#svBody');
+  $('#ovEnd').hidden=true;$('#ovSurvey').hidden=false;
+  if(FORM_URL){
+    b.innerHTML='<p style="margin-bottom:10px">Responda em um minuto. Suas respostas ajudam o grupo a melhorar o FleetMind AI.</p><iframe id="svFrame" src="'+FORM_URL+'" title="Pesquisa de satisfação"></iframe><div class="row" style="margin-top:12px"><a class="btn" href="'+FORM_URL.replace('?embedded=true','')+'" target="_blank" rel="noopener">Abrir em nova aba</a><button class="btn" id="svClose">Fechar</button></div>';
+    $('#svClose').onclick=function(){$('#ovSurvey').hidden=true;};return;
+  }
+  var h='<p style="margin-bottom:14px">Leva um minuto. Suas respostas ajudam o grupo a melhorar o FleetMind AI.</p>';
+  QS.forEach(function(q){h+='<div class="q"><span class="ql">'+q.t+'</span><div class="rate" data-k="'+q.k+'">'+[1,2,3,4,5].map(function(n){return '<button type="button" aria-pressed="false" data-v="'+n+'">'+n+'</button>';}).join('')+'</div><div class="scale"><span>1 · '+q.lo+'</span><span>5 · '+q.hi+'</span></div></div>';});
+  OPTS.forEach(function(q){h+='<div class="q"><span class="ql">'+q.t+'</span><div class="rate" data-k="'+q.k+'">'+q.o.map(function(o){return '<button type="button" aria-pressed="false" data-v="'+o+'">'+o+'</button>';}).join('')+'</div></div>';});
+  h+='<div class="q"><label for="svTxt">O que melhoraria ou o que mais gostou?</label><textarea id="svTxt" placeholder="Escreva livremente"></textarea></div><div class="row"><button class="btn pri" id="svSend">Enviar</button><button class="btn" id="svClose">Pular</button></div>';
+  b.innerHTML=h;
+  b.querySelectorAll('.rate').forEach(function(g){g.addEventListener('click',function(e){var x=e.target.closest('button');if(!x)return;g.querySelectorAll('button').forEach(function(y){y.setAttribute('aria-pressed','false');});x.setAttribute('aria-pressed','true');SV[g.getAttribute('data-k')]=x.getAttribute('data-v');});});
+  $('#svClose').onclick=function(){$('#ovSurvey').hidden=true;};
+  $('#svSend').onclick=function(){
+    SV.comentario=$('#svTxt').value.trim();
+    try{localStorage.setItem('fleetmind_pesquisa',JSON.stringify(SV));}catch(e){}
+    var txt='Pesquisa FleetMind AI\nModo: '+SV.modo+'\nExperiência geral: '+(SV.geral||'-')+'/5\nRealismo: '+(SV.realismo||'-')+'/5\nClareza do papel da IA: '+(SV.valor||'-')+'/5\nVoz: '+(SV.voz||'-')+'\nUsaria na operação: '+(SV.usaria||'-')+'\nPerfil que mais chamou atenção: '+(SV.perfil||'-')+'\nComentário: '+(SV.comentario||'-');
+    $('#svBody').innerHTML='<p style="color:var(--fg);font-size:16px;margin-bottom:12px"><b>Obrigado pela avaliação!</b></p><p style="margin-bottom:10px">Copie o resumo abaixo e envie ao grupo.</p><div class="q"><textarea id="svOut" readonly style="min-height:170px">'+esc(txt)+'</textarea></div><div class="row"><button class="btn pri" id="svCopy">Copiar resumo</button><button class="btn" id="svClose2">Fechar</button></div>';
+    $('#svCopy').onclick=function(){var t=$('#svOut');try{navigator.clipboard.writeText(t.value).then(function(){$('#svCopy').textContent='Copiado';},function(){t.select();});}catch(e){t.select();}};
+    $('#svClose2').onclick=function(){$('#ovSurvey').hidden=true;};
+  };
+}
+$('#endSurvey').onclick=openSurvey;
+$('#goPlay').onclick=function(){start('play');};
+$('#goWatch').onclick=function(){start('watch');};
+$('#bRestart').onclick=function(){reset();$('#ovStart').hidden=false;};
+$('#endAgain').onclick=function(){reset();$('#ovStart').hidden=false;};
+$('#endClose').onclick=function(){$('#ovEnd').hidden=true;};
+$('#bMode').onclick=function(){start(S.mode==='play'?'watch':'play');};
+$('#bVoice').onclick=function(){S.voice=!S.voice;this.setAttribute('aria-pressed',S.voice);this.textContent=S.voice?'Voz ligada':'Voz desligada';if(!S.voice)stopVoice();};
+$('#bSpeed').onclick=function(){S.speed=S.speed===1?2:1;this.textContent='Velocidade '+S.speed+'x';this.setAttribute('aria-pressed',S.speed===2);};
+reset();
+})();
+</script>
+</html>
