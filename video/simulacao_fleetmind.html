@@ -520,6 +520,16 @@ function start(mode){
 /* ---------- pesquisa de satisfação ---------- */
 var FORM_URL='';/* link do Google Forms (modo embutido): https://docs.google.com/forms/d/e/ID/viewform?embedded=true */
 var SV={};
+var FORM_POST='https://docs.google.com/forms/d/e/1FAIpQLSdgMNbdZrlfgVE8jmOTNS-5wu8pKF6HoSM7OATTK0pIq41NQA/formResponse';
+var ENT={geral:'entry.2051552736',realismo:'entry.456164541',valor:'entry.160429387',voz:'entry.15525991',usaria:'entry.1862778933',perfil:'entry.1753948754',comentario:'entry.263305987'};
+function sendForm(){
+  var p=new URLSearchParams();
+  Object.keys(ENT).forEach(function(k){
+    var v=SV[k];if(k==='comentario')v=((SV.comentario||'')+' [modo: '+SV.modo+']').trim();
+    if(v)p.append(ENT[k],v);
+  });
+  return fetch(FORM_POST,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:p.toString()});
+}
 var QS=[
   {k:'geral',t:'Como foi a experiência geral?',lo:'Ruim',hi:'Ótima'},
   {k:'realismo',t:'Parece uma operação real de frota?',lo:'Nada',hi:'Muito'},
@@ -583,7 +593,8 @@ function openSurvey(){
     SV.comentario=$('#svTxt').value.trim();
     try{localStorage.setItem('fleetmind_pesquisa',JSON.stringify(SV));}catch(e){}
     var txt='Pesquisa FleetMind AI\nModo: '+SV.modo+'\nExperiência geral: '+(SV.geral||'-')+'/5\nRealismo: '+(SV.realismo||'-')+'/5\nClareza do papel da IA: '+(SV.valor||'-')+'/5\nVoz: '+(SV.voz||'-')+'\nUsaria na operação: '+(SV.usaria||'-')+'\nPerfil que mais chamou atenção: '+(SV.perfil||'-')+'\nComentário: '+(SV.comentario||'-');
-    $('#svBody').innerHTML='<p style="color:var(--fg);font-size:16px;margin-bottom:12px"><b>Obrigado pela avaliação!</b></p><p style="margin-bottom:10px">Copie o resumo abaixo e envie ao grupo.</p><div class="q"><textarea id="svOut" readonly style="min-height:170px">'+esc(txt)+'</textarea></div><div class="row"><button class="btn pri" id="svCopy">Copiar resumo</button><button class="btn" id="svClose2">Fechar</button></div>';
+    $('#svBody').innerHTML='<p style="color:var(--fg);font-size:16px;margin-bottom:12px"><b>Obrigado pela avaliação!</b></p><p style="margin-bottom:10px" id="svStat">Enviando sua resposta…</p><div class="q"><textarea id="svOut" readonly style="min-height:170px">'+esc(txt)+'</textarea></div><div class="row"><button class="btn pri" id="svCopy">Copiar resumo</button><button class="btn" id="svClose2">Fechar</button></div>';
+    sendForm().then(function(){$('#svStat').textContent='Resposta enviada. Se quiser, guarde também o resumo abaixo.';},function(){$('#svStat').textContent='Não foi possível enviar daqui. Copie o resumo abaixo e envie ao grupo.';});
     $('#svCopy').onclick=function(){var t=$('#svOut');try{navigator.clipboard.writeText(t.value).then(function(){$('#svCopy').textContent='Copiado';},function(){t.select();});}catch(e){t.select();}};
     $('#svClose2').onclick=function(){$('#ovSurvey').hidden=true;};
   };
