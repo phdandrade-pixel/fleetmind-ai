@@ -5,7 +5,7 @@ const NAVY = "001028", NAVY2 = "0C2440", TEAL = "007880", TEAL_L = "4FD1D9";
 const WARM = "C9622A", WHITE = "FFFFFF", GRAY_BG = "E9EEF2", GRAY_LN = "D6DEE4";
 const MUTED = "4A5560", MUTED_D = "AFC3CC";
 const HEAD = "Cambria", BODY = "Calibri";
-const TOTAL = 17;
+const TOTAL = 18;
 
 const LOGO = "../assets/logo_icon_transparent.png";
 const LOGO_W = "../assets/logo_icon_white.png";
@@ -63,8 +63,8 @@ function src(s, t, dark) {
   title(s, "Frotas têm dados demais e decisão tardia");
   const items = [
     ["53%", "das mortes em rodovias federais em 2024 envolveram caminhões e ônibus, que são só 4% da frota.", "PRF / Agência Brasil, 2024", WARM],
-    ["15,5%", "do PIB é custo logístico no Brasil. Nos EUA são 8,8%.", "ILOS, 2025", TEAL],
-    ["20%", "das frotas brasileiras usam telemetria avançada (dados do motor e da condução em tempo real). Nos EUA são 60%.", "Frotacia / Frost & Sullivan", TEAL],
+    ["62%", "das transportadoras relataram rentabilidade menor no 1º tri/2025, e 47% renegociavam contratos ou cortavam rotas.", "NTC&Logística", WARM],
+    ["40%", "do CO₂ do transporte rodoviário (~270 milhões de toneladas em 2024) vem dos caminhões.", "Inventário Nacional de Emissões (IEMA/MMA/MT)", TEAL],
   ];
   items.forEach((it, i) => {
     const x = 0.6 + i * 4.1;
@@ -73,8 +73,8 @@ function src(s, t, dark) {
     s.addText(it[1], { x: x + 0.3, y: 3.8, w: 3.25, h: 1.5, align: "center", fontFace: BODY, fontSize: 15, color: NAVY, margin: 0, lineSpacing: 20 });
     s.addText(it[2], { x: x + 0.3, y: 5.3, w: 3.25, h: 0.35, align: "center", fontFace: BODY, italic: true, fontSize: 10, color: MUTED, margin: 0 });
   });
-  s.addText("GPS, telemetria, câmeras, TMS e ERP geram milhares de eventos por dia. Falta transformar isso em uma decisão certa, no momento certo.", { x: 0.6, y: 5.9, w: 12, h: 0.5, fontFace: HEAD, italic: true, fontSize: 13, color: NAVY, margin: 0 });
-  band(s, "o transporte rodoviário perde vidas e dinheiro porque decide tarde, mesmo com dados de sobra.", false);
+  s.addText("Os dados existem em rastreador, telemetria, manutenção e TMS (sistema de gestão de transporte), mas ninguém os converte em ação a tempo. Cada desperdício não corrigido sai direto do lucro.", { x: 0.6, y: 5.9, w: 12, h: 0.5, fontFace: HEAD, italic: true, fontSize: 13, color: NAVY, margin: 0 });
+  band(s, "a margem está apertada e o dado já existe; falta transformá-lo em ação a tempo.", false);
   note(s, "Problema (40s). O transporte rodoviario concentra mortes e custo. As empresas ja tem dados, mas a decisao e reativa: o gestor descobre o problema depois que ele aconteceu.");
 }
 
@@ -82,11 +82,11 @@ function src(s, t, dark) {
 {
   const s = slide(false);
   kicker(s, "Oportunidade");
-  title(s, "Um mercado grande e ainda pouco digitalizado");
+  title(s, "Um mercado de 2,24 milhões de caminhões");
   const f = [
-    ["TAM", "≈ R$ 10,5 bi/ano", "Mercado total: se todos os 2,24 mi de caminhões do Brasil usassem o FleetMind (× R$ 4.680 por ano).", 7.6, NAVY],
-    ["SAM", "≈ R$ 5,5 bi/ano", "Mercado que dá para atender: tecnologia de gestão de frotas no Brasil (≈ US$ 1 bi, 2024).", 6.2, NAVY2],
-    ["SOM", "R$ 30–50 mi/ano", "Mercado que vamos conquistar: menos de 1% do SAM em 3 anos (6 a 10 mil veículos).", 4.8, TEAL],
+    ["TAM", "≈ R$ 0,8 a 1,3 bi/ano", "Mercado total: se todos os 2,24 mi de caminhões usassem o FleetMind, a R$ 29,90 a R$ 49,90 por veículo por mês.", 7.6, NAVY],
+    ["SAM", "a dimensionar", "Mercado que dá para atender: frotas de 100 a 2.000 veículos. Empresas movem 68% das cargas (CNT). Tamanho exato a levantar no RNTRC/ANTT.", 6.2, NAVY2],
+    ["SOM", "R$ 1,8 a 3 mi/ano", "Mercado que vamos conquistar: meta de 5.000 veículos em 3 anos, só em assinatura, sem contar a parte da economia.", 4.8, TEAL],
   ];
   f.forEach((r, i) => {
     const w = r[3], x = 0.6 + (7.6 - w) / 2, y = 2.0 + i * 1.35;
@@ -101,10 +101,10 @@ function src(s, t, dark) {
   s.addText("gestão de frotas, 2025 a 2030 (13,3% ao ano).", { x: 8.75, y: 3.3, w: 3.7, h: 0.6, fontFace: BODY, fontSize: 12, color: MUTED, margin: 0 });
   s.addText("US$ 8,5 bi → 19,8 bi", { x: 8.75, y: 4.05, w: 3.7, h: 0.6, fontFace: HEAD, bold: true, fontSize: 23, color: TEAL, margin: 0 });
   s.addText("IA aplicada a frotas, 2025 a 2034.", { x: 8.75, y: 4.7, w: 3.7, h: 0.5, fontFace: BODY, fontSize: 12, color: MUTED, margin: 0 });
-  s.addText("Quanto menor a faixa, mais realista a meta.", { x: 8.75, y: 5.3, w: 3.7, h: 0.6, fontFace: BODY, bold: true, fontSize: 12, color: TEAL, margin: 0 });
-  band(s, "o mercado total é de R$ 10,5 bi/ano; vamos atender quem precisa de IA e conquistar menos de 1% do mercado em 3 anos.", false, 6.2);
-  src(s, "Fontes: Sindipeças (2024); Frost & Sullivan via Frotacia; MarketsandMarkets e Precedence Research. TAM e SOM são estimativas da equipe.");
-  note(s, "Mercado (40s). O Brasil tem 2,24 milhoes de caminhoes e so 20% das frotas usam telemetria avancada. Esse espaco e a oportunidade. TAM, SAM e SOM sao estimativas da equipe baseadas em fontes publicas.");
+  s.addText("Quanto menor a faixa, mais realista a meta. A receita também cresce com a parte da economia comprovada.", { x: 8.75, y: 5.3, w: 3.7, h: 0.7, fontFace: BODY, bold: true, fontSize: 11.5, color: TEAL, margin: 0, lineSpacing: 15 });
+  band(s, "o mercado de assinaturas chega perto de R$ 1 bi por ano; começamos por frotas de 100 a 2.000 veículos.", false, 6.2);
+  src(s, "Fontes: Sindipeças (2024); CNT via Agência Infra; MarketsandMarkets e Precedence Research. TAM = 2,24 mi × R$ 358,80 a R$ 598,80 por ano. TAM e SOM são estimativas da equipe; preços são hipóteses não validadas.");
+  note(s, "Mercado (40s). O Brasil tem 2,24 milhoes de caminhoes. Com assinatura de R$ 29,90 a R$ 49,90 por veiculo por mes, o mercado total fica perto de R$ 1 bilhao por ano. Nosso foco sao frotas de 100 a 2.000 veiculos; o tamanho exato desse segmento ainda precisa ser levantado. TAM e SOM sao estimativas da equipe e os precos sao hipoteses.");
 }
 
 /* 4 SOLUCAO */
@@ -121,7 +121,7 @@ function src(s, t, dark) {
     if (!last) s.addText("→", { x: bx + 2.17, y: 3.1, w: 0.4, h: 0.5, align: "center", fontSize: 20, bold: true, color: "9AA9C4", margin: 0 });
   });
   s.addShape("roundRect", { x: 0.6, y: 5.2, w: 12.1, h: 1.0, rectRadius: 0.1, fill: { color: "F7E9E0" }, line: { color: "EDD0BE", width: 1 } });
-  s.addText([{ text: "Não substitui telemetria, TMS ou rastreamento. ", options: { bold: true, color: WARM } }, { text: "Integra o que o cliente já usa e adiciona a inteligência que falta, sem trocar a operação.", options: { color: NAVY } }], { x: 0.9, y: 5.2, w: 11.5, h: 1.0, valign: "middle", fontFace: BODY, fontSize: 15, margin: 0 });
+  s.addText([{ text: "Não substitui telemetria, TMS ou rastreamento. ", options: { bold: true, color: WARM } }, { text: "Integra o que o cliente já usa, de vários fornecedores, e adiciona a inteligência que falta, sem exigir mais hardware.", options: { color: NAVY } }], { x: 0.9, y: 5.2, w: 11.5, h: 1.0, valign: "middle", fontFace: BODY, fontSize: 15, margin: 0 });
   band(s, "o FleetMind é o cérebro que liga os dados da frota, prevê o risco e age antes do problema acontecer.", false);
   note(s, "Solucao (35s). Dado vira previsao, previsao vira decisao, decisao vira acao. O FleetMind nao concorre com a telemetria ou o TMS, ele se integra e adiciona a camada de inteligencia.");
 }
@@ -143,6 +143,28 @@ function src(s, t, dark) {
   s.addText("Dashboard no ar, ligado a um servidor de dados e a modelos de IA. Dados da demonstração: 120 veículos e 4.000 viagens sintéticos.", { x: 0.6, y: 6.0, w: 12, h: 0.35, fontFace: BODY, italic: true, fontSize: 11, color: MUTED, margin: 0 });
   band(s, "o gestor vê o que a IA já resolveu e só atua quando ela chama um humano.", false);
   note(s, "Produto (60s). Esta e a tela real. A IA ja decidiu e agiu sobre cada situacao. Quando o motorista nao responde ou o risco e critico, o proprio agente escala para um operador humano. Tudo fica registrado.");
+}
+
+/* 5A VALOR POR PESSOA */
+{
+  const s = slide(false);
+  kicker(s, "Valor para cada pessoa");
+  title(s, "Menos alertas, mais decisão: quem ganha o quê");
+  const v = [
+    ["Dono ou diretoria", "Menos desperdício de diesel e de paradas, e prova do ROI em reais.", "Condição: economia auditável."],
+    ["Gestor de frota", "Fila curta de alertas priorizados por impacto e com explicação, em vez de mais um painel.", "Condição: poucos alertas e baixo falso positivo."],
+    ["Manutenção", "Sinais de falha recorrente antes da quebra e registro do que foi feito.", "Condição: dados de manutenção integráveis."],
+    ["Motorista", "Sem tela nova no MVP, menos retrabalho e menos risco de fadiga.", "Condição: dados usados para orientar, não para punir."],
+  ];
+  v.forEach((r, i) => {
+    const x = 0.6 + i * 3.05;
+    card(s, x, 2.0, 2.9, 3.9);
+    s.addText(r[0], { x: x + 0.2, y: 2.15, w: 2.5, h: 0.45, fontFace: HEAD, bold: true, fontSize: 16, color: TEAL, margin: 0 });
+    s.addText(r[1], { x: x + 0.2, y: 2.75, w: 2.5, h: 1.9, fontFace: BODY, fontSize: 13, color: NAVY, margin: 0, lineSpacing: 17 });
+    s.addText(r[2], { x: x + 0.2, y: 4.8, w: 2.5, h: 0.9, fontFace: BODY, italic: true, fontSize: 11.5, color: MUTED, margin: 0, lineSpacing: 15 });
+  });
+  band(s, "cada pessoa recebe só o que precisa, e o dado serve para orientar, nunca para punir.", false);
+  note(s, "Valor por pessoa (35s). Cada papel recebe algo diferente: o dono ve o ROI em reais, o gestor ve poucos alertas priorizados, a manutencao ve a falha antes da quebra e o motorista nao ganha tela nova. O dado e usado para orientar, nao para punir.");
 }
 
 /* 6 AGENTE + REDE */
@@ -244,105 +266,111 @@ function src(s, t, dark) {
 {
   const s = slide(false);
   kicker(s, "Valor econômico");
-  title(s, "Retorno em 4 a 15 meses, mesmo no cenário conservador");
-  s.addChart(p.charts.BAR, [{ name: "Economia anual (R$ mil)", labels: ["Conservador", "Base", "Otimista"], values: [541, 1091, 1768] }], {
-    x: 0.6, y: 2.0, w: 6.4, h: 3.75, barDir: "col", chartColors: [TEAL], showValue: true, dataLabelFormatCode: "#,##0", dataLabelColor: NAVY, dataLabelFontSize: 12, dataLabelPosition: "outEnd",
-    showTitle: true, title: "Economia anual estimada (R$ mil)", titleFontSize: 13, titleColor: NAVY, titleFontFace: BODY,
-    catAxisLabelColor: NAVY, catAxisLabelFontSize: 12, valAxisLabelColor: MUTED, valAxisLabelFontSize: 10, valGridLine: { color: GRAY_LN, size: 0.5 }, catGridLine: { style: "none" }, showLegend: false, valAxisMaxVal: 2200,
+  title(s, "Para 1.000 veículos, o cliente empata com R$ 30,50 de economia por veículo por mês");
+  s.addChart(p.charts.BAR, [{ name: "Benefício líquido no ano (R$ mil)", labels: ["R$ 30", "R$ 50", "R$ 100"], values: [-6.3, 233.7, 833.7] }], {
+    x: 0.6, y: 2.1, w: 6.4, h: 3.65, barDir: "col", chartColors: [TEAL], showValue: true, dataLabelFormatCode: "#,##0.0", dataLabelColor: NAVY, dataLabelFontSize: 12, dataLabelPosition: "outEnd",
+    showTitle: true, title: "Benefício líquido no ano, por economia de cada veículo por mês (R$ mil)", titleFontSize: 12, titleColor: NAVY, titleFontFace: BODY,
+    catAxisLabelColor: NAVY, catAxisLabelFontSize: 12, valAxisLabelColor: MUTED, valAxisLabelFontSize: 10, valGridLine: { color: GRAY_LN, size: 0.5 }, catGridLine: { style: "none" }, showLegend: false, valAxisMinVal: -100, valAxisMaxVal: 1000,
   });
-  const rows = [["", "Conserv.", "Base", "Otimista"], ["ROI no ano 1", "−17%", "67%", "171%"], ["Retorno do investimento", "14,5 meses", "7,2 meses", "4,4 meses"]];
+  const rows = [["Economia/veículo/mês", "R$ 30", "R$ 50", "R$ 100"], ["Benefício líquido", "−R$ 6,3 mil", "R$ 233,7 mil", "R$ 833,7 mil"], ["ROI no ano 1", "≈ 0%", "64%", "228%"], ["Retorno do investimento", "12,2 meses", "7,3 meses", "3,7 meses"]];
   rows.forEach((r, ri) => r.forEach((cell, ci) => {
-    const x = 7.3 + (ci === 0 ? 0 : 1.9 + (ci - 1) * 1.15), w = ci === 0 ? 1.9 : 1.15, y = 2.1 + ri * 0.7;
-    s.addShape("rect", { x, y, w, h: 0.7, fill: { color: ri === 0 ? NAVY : (ci === 2 ? "DFF0F1" : WHITE) }, line: { color: GRAY_LN, width: 0.75 } });
-    s.addText(cell, { x: x + 0.05, y, w: w - 0.1, h: 0.7, align: ci === 0 ? "left" : "center", valign: "middle", fontFace: BODY, fontSize: ri === 0 ? 11 : 12, bold: ri === 0 || ci === 2, color: ri === 0 ? WHITE : NAVY, margin: 0 });
+    const x = 7.3 + (ci === 0 ? 0 : 1.7 + (ci - 1) * 1.23), w = ci === 0 ? 1.7 : 1.23, y = 2.0 + ri * 0.55;
+    s.addShape("rect", { x, y, w, h: 0.55, fill: { color: ri === 0 ? NAVY : (ci === 2 ? "DFF0F1" : WHITE) }, line: { color: GRAY_LN, width: 0.75 } });
+    s.addText(cell, { x: x + 0.05, y, w: w - 0.1, h: 0.55, align: ci === 0 ? "left" : "center", valign: "middle", fontFace: BODY, fontSize: ri === 0 ? 10.5 : 11, bold: ri === 0 || ci === 2, color: ri === 0 ? WHITE : NAVY, margin: 0 });
   }));
-  s.addText("ROI = quanto o cliente ganha para cada real investido. Retorno do investimento = em quantos meses a economia paga o gasto.", { x: 7.3, y: 4.3, w: 5.4, h: 0.7, fontFace: BODY, bold: true, fontSize: 11.5, color: TEAL, margin: 0, lineSpacing: 15 });
-  s.addText("Investimento no ano 1: R$ 652 mil (120 veículos × R$ 390/mês + R$ 90 mil de implantação). A economia vem de combustível, manutenção, atrasos e sinistros evitados. O cenário conservador só fecha o caixa no segundo ano.", { x: 7.3, y: 5.0, w: 5.4, h: 0.85, fontFace: BODY, fontSize: 11, color: MUTED, margin: 0, lineSpacing: 14 });
-  band(s, "o cliente recupera o investimento entre 4 e 15 meses, e cada premissa pode ser testada no dashboard.", false, 6.0);
-  src(s, "HIPÓTESE a validar no piloto de 90–120 dias: ganho de 2 a 7% em combustível, 30 a 70% das falhas evitáveis, 10 a 35% de atrasos. Custos-base vêm dos dados da frota de demonstração. Combustível = 30–35% do custo operacional (CNT/NTC&Logística).");
-  note(s, "Valor (50s). Mesmo no cenario conservador o cliente recupera o investimento em cerca de 14 meses. No base, 7 meses. Os percentuais de ganho sao hipoteses que o piloto vai validar, e o dashboard permite ajustar todas as premissas.");
+  s.addText("ROI = quanto o cliente ganha para cada real investido. Retorno do investimento = em quantos meses a economia paga o gasto.", { x: 7.3, y: 4.3, w: 5.4, h: 0.6, fontFace: BODY, bold: true, fontSize: 11, color: TEAL, margin: 0, lineSpacing: 14 });
+  s.addText("Custo para o cliente: R$ 29,90 por veículo por mês (R$ 358.800 por ano) mais R$ 7.500 de implantação, ou R$ 366.300 no 1º ano. As economias são hipóteses a medir no piloto, com baseline auditável.", { x: 7.3, y: 4.95, w: 5.4, h: 0.85, fontFace: BODY, fontSize: 11, color: MUTED, margin: 0, lineSpacing: 14 });
+  band(s, "com R$ 50 de economia por veículo por mês, o cliente recupera o investimento em cerca de 7 meses.", false, 6.0);
+  src(s, "Preços de referência (hipóteses não validadas): R$ 29,90 por veículo por mês com 1.000 veículos. O custo de servir (nuvem, IA, APIs e suporte) ainda não foi medido e é a principal variável do piloto. O modelo híbrido soma 15% da economia comprovada, não incluídos nesta conta.");
+  note(s, "Valor (50s). Para 1.000 veiculos o cliente paga R$ 366.300 no primeiro ano. Ele empata se economizar cerca de R$ 30,50 por veiculo por mes. Com R$ 50 o ROI e de 64% e o retorno em 7 meses. Com R$ 100, 228%. Essas economias sao hipoteses: o piloto vai medir com baseline auditavel.");
 }
 
 /* 9 ESG */
 {
   const s = slide(false);
   kicker(s, "Impacto ESG");
-  title(s, "Menos diesel queimado, menos carbono emitido");
-  const k = [["4.176 t", "CO₂e por ano da frota (linha de base)"], ["0,929 kg", "CO₂e por km rodado"], ["168,5 t", "CO₂e evitadas por ano, cenário base"], ["64.824 l", "de diesel não consumidos por ano"]];
+  title(s, "Cada 1% de diesel poupado reduz cerca de 1% do carbono");
+  const k = [["~270 mi t", "de CO₂ no transporte rodoviário do Brasil em 2024"], ["40%", "dessas emissões vêm dos caminhões"], ["≈ 1%", "menos CO₂ para cada 1% de diesel evitado"], ["4.176 t", "CO₂e por ano da frota de demonstração"]];
   k.forEach((r, i) => {
     const x = 0.6 + i * 3.1, hl = i === 2;
     card(s, x, 2.0, 2.9, 1.3, hl ? TEAL : GRAY_BG, hl ? TEAL : GRAY_LN);
     s.addText(r[0], { x: x + 0.15, y: 2.08, w: 2.6, h: 0.6, fontFace: HEAD, bold: true, fontSize: 26, color: hl ? WHITE : NAVY, margin: 0 });
     s.addText(r[1], { x: x + 0.15, y: 2.7, w: 2.6, h: 0.55, fontFace: BODY, fontSize: 10.5, color: hl ? "E3F1F2" : MUTED, margin: 0, lineSpacing: 13 });
   });
-  s.addChart(p.charts.BAR, [{ name: "tCO2e evitadas", labels: ["Conservador", "Base", "Otimista"], values: [84.3, 168.5, 294.9] }], {
+  s.addChart(p.charts.BAR, [{ name: "tCO2e evitadas", labels: ["1% de diesel", "2% de diesel", "5% de diesel"], values: [41.8, 83.5, 208.8] }], {
     x: 0.6, y: 3.45, w: 6.6, h: 2.6, barDir: "bar", chartColors: [TEAL], showValue: true, dataLabelFormatCode: "0.0", dataLabelColor: NAVY, dataLabelFontSize: 11, dataLabelPosition: "outEnd",
-    showTitle: true, title: "CO₂e evitado por cenário (t/ano)", titleFontSize: 12, titleColor: NAVY, titleFontFace: BODY,
-    catAxisLabelColor: NAVY, catAxisLabelFontSize: 11, valAxisLabelColor: MUTED, valAxisLabelFontSize: 9, valGridLine: { color: GRAY_LN, size: 0.5 }, catGridLine: { style: "none" }, showLegend: false, valAxisMaxVal: 360,
+    showTitle: true, title: "CO₂e evitado na frota de demonstração, por diesel poupado (t/ano)", titleFontSize: 12, titleColor: NAVY, titleFontFace: BODY,
+    catAxisLabelColor: NAVY, catAxisLabelFontSize: 11, valAxisLabelColor: MUTED, valAxisLabelFontSize: 9, valGridLine: { color: GRAY_LN, size: 0.5 }, catGridLine: { style: "none" }, showLegend: false, valAxisMaxVal: 250,
   });
   card(s, 7.5, 3.45, 5.2, 2.6);
-  s.addText("De onde vem a redução", { x: 7.75, y: 3.55, w: 4.7, h: 0.4, fontFace: HEAD, bold: true, fontSize: 15, color: NAVY, margin: 0 });
+  s.addText("Medimos antes de prometer", { x: 7.75, y: 3.55, w: 4.7, h: 0.4, fontFace: HEAD, bold: true, fontSize: 15, color: NAVY, margin: 0 });
   s.addText([
-    { text: "Rotas e desvios em acidente, clima e trânsito", options: { bullet: true, breakLine: true } },
-    { text: "Condução orientada em tempo real", options: { bullet: true, breakLine: true } },
-    { text: "Menos marcha lenta em atrasos", options: { bullet: true, breakLine: true } },
-    { text: "Manutenção preditiva do motor", options: { bullet: true } },
-  ], { x: 7.75, y: 3.98, w: 4.7, h: 1.4, fontFace: BODY, fontSize: 12.5, color: NAVY, margin: 0, paraSpaceAfter: 4 });
-  s.addText("≈ 7.700 árvores equivalentes por ano (cenário base)", { x: 7.75, y: 5.45, w: 4.7, h: 0.4, fontFace: BODY, bold: true, fontSize: 12, color: TEAL, margin: 0 });
-  band(s, "gastar menos diesel significa emitir menos carbono e gastar menos dinheiro.", false, 6.2);
-  src(s, "tCO₂e = toneladas de CO₂ equivalente. Escopo 1 = emissões da queima de diesel da própria frota. Fator de 2,6 kgCO₂e/l é premissa a trocar pelo oficial do Programa Brasileiro GHG Protocol. Base sintética de 120 veículos. Árvores: equivalência ilustrativa.");
-  note(s, "ESG (40s). O produto tambem reduz emissoes. Na base de demonstracao, a frota emite 4.176 toneladas de CO2e por ano. No cenario base evitamos 168 toneladas. O fator de emissao e uma premissa que sera substituida pelo oficial antes de qualquer divulgacao.");
+    { text: "O piloto mede os litros de diesel antes e depois", options: { bullet: true, breakLine: true } },
+    { text: "O CO₂ cai na mesma proporção do consumo", options: { bullet: true, breakLine: true } },
+    { text: "Não prometemos percentual de ESG antes de medir", options: { bullet: true, breakLine: true } },
+    { text: "O resultado alimenta o relatório ESG do cliente", options: { bullet: true } },
+  ], { x: 7.75, y: 3.98, w: 4.7, h: 1.5, fontFace: BODY, fontSize: 12.5, color: NAVY, margin: 0, paraSpaceAfter: 4 });
+  s.addText("Caminhões e ônibus: ~6% da frota e quase metade das emissões.", { x: 7.75, y: 5.5, w: 4.7, h: 0.45, fontFace: BODY, bold: true, fontSize: 11.5, color: TEAL, margin: 0 });
+  band(s, "gastar menos diesel significa emitir menos carbono, e o piloto vai medir quanto.", false, 6.2);
+  src(s, "Fonte: Inventário Nacional de Emissões (IEMA/MMA/MT), via Mundo Logística. tCO₂e = toneladas de CO₂ equivalente. Os 4.176 t e as barras usam a frota sintética de 120 veículos e o fator de 2,6 kgCO₂e/l, premissa a trocar pelo oficial do GHG Protocol. São ilustrações, não metas.");
+  note(s, "ESG (40s). Caminhoes emitem 40% do CO2 do transporte rodoviario. O CO2 do diesel cai na mesma proporcao do consumo: cada 1% de diesel evitado reduz cerca de 1% das emissoes da frota. Por isso nao prometemos percentual de ESG antes de medir. O piloto mede litros antes e depois. Os numeros do grafico sao ilustracoes sobre a frota de demonstracao.");
 }
 
 /* 10 MODELO DE NEGOCIO */
 {
   const s = slide(false);
   kicker(s, "Modelo de negócio");
-  title(s, "Assinatura mensal por veículo (modelo SaaS)");
-  card(s, 0.6, 2.0, 4.6, 3.85, NAVY, NAVY);
-  s.addText("R$ 390", { x: 0.9, y: 2.2, w: 4, h: 1.0, fontFace: HEAD, bold: true, fontSize: 54, color: WHITE, margin: 0 });
-  s.addText("por veículo por mês", { x: 0.9, y: 3.2, w: 4, h: 0.4, fontFace: BODY, fontSize: 16, color: TEAL_L, margin: 0 });
-  s.addText("R$ 4.680 por veículo por ano.", { x: 0.9, y: 3.75, w: 4, h: 0.4, fontFace: BODY, fontSize: 14, color: MUTED_D, margin: 0 });
-  s.addText("SaaS: o cliente paga assinatura em vez de comprar o software, e a receita se repete todo mês. Preço de partida, a validar com clientes.", { x: 0.9, y: 4.3, w: 4, h: 1.4, fontFace: BODY, fontSize: 12, color: MUTED_D, margin: 0, lineSpacing: 16 });
-  const rev = [["Assinatura por veículo e por usuário", "Receita recorrente principal"], ["Implantação e customizações", "Receita de entrada por cliente"], ["Integrações e APIs premium", "Expansão dentro do cliente"], ["Marketplace de parceiros", "Seguradoras, montadoras, telemetria"], ["Dashboards executivos e IA como serviço", "Consultoria em dados"]];
-  rev.forEach((r, i) => {
-    const y = 2.0 + i * 0.77;
-    card(s, 5.5, y, 7.2, 0.67);
-    s.addText(r[0], { x: 5.7, y, w: 3.9, h: 0.67, valign: "middle", fontFace: BODY, bold: true, fontSize: 13, color: NAVY, margin: 0 });
-    s.addText(r[1], { x: 9.6, y, w: 3.0, h: 0.67, valign: "middle", fontFace: BODY, fontSize: 11.5, color: MUTED, margin: 0 });
+  title(s, "Modelo híbrido: mensalidade menor mais parte da economia comprovada");
+  card(s, 0.6, 2.0, 4.6, 3.55, NAVY, NAVY);
+  s.addText("R$ 29,90 a 49,90", { x: 0.85, y: 2.15, w: 4.2, h: 0.8, fontFace: HEAD, bold: true, fontSize: 32, color: WHITE, margin: 0 });
+  s.addText("por veículo por mês (assinatura SaaS)", { x: 0.85, y: 2.95, w: 4.2, h: 0.35, fontFace: BODY, fontSize: 14, color: TEAL_L, margin: 0 });
+  s.addText("R$ 49,90 com 100 veículos e R$ 29,90 com 1.000, mais R$ 7.500 de implantação.", { x: 0.85, y: 3.4, w: 4.2, h: 0.65, fontFace: BODY, fontSize: 12, color: MUTED_D, margin: 0, lineSpacing: 16 });
+  s.addText("+ 15% da economia comprovada (faixa de 10 a 20%)", { x: 0.85, y: 4.15, w: 4.2, h: 0.6, fontFace: BODY, bold: true, fontSize: 14, color: TEAL_L, margin: 0, lineSpacing: 18 });
+  s.addText("SaaS: assinatura em vez de compra, com receita que se repete todo mês. Preços são hipóteses não validadas.", { x: 0.85, y: 4.85, w: 4.2, h: 0.6, fontFace: BODY, fontSize: 10.5, color: MUTED_D, margin: 0, lineSpacing: 14 });
+  const hdr = ["Modelo de cobrança", "Vantagem", "Risco"], cx = [5.5, 7.55, 10.15], cwid = [2.0, 2.55, 2.55];
+  hdr.forEach((h, i) => s.addText(h.toUpperCase(), { x: cx[i] + 0.1, y: 2.0, w: cwid[i] - 0.1, h: 0.3, fontFace: BODY, bold: true, fontSize: 9.5, charSpacing: 1, color: MUTED, margin: 0 }));
+  const mod = [["Por veículo por mês", "Receita previsível, simples de vender", "Cliente paga mesmo sem resultado", 0], ["Por módulo", "Entrada barata e venda adicional", "Fragmenta o valor, mais complexidade comercial", 0], ["Por economia gerada", "Risco zero para o cliente", "Exige baseline auditável, receita volátil", 0], ["Híbrido (recomendado)", "Alinha interesses e reduz a barreira de entrada", "Contrato mais complexo", 1]];
+  mod.forEach((r, i) => {
+    const y = 2.35 + i * 0.8, hl = r[3] === 1;
+    s.addShape("roundRect", { x: 5.5, y, w: 7.2, h: 0.72, rectRadius: 0.08, fill: { color: hl ? "E3F1F2" : GRAY_BG }, line: { color: hl ? TEAL : GRAY_LN, width: hl ? 1.5 : 1 } });
+    s.addText(r[0], { x: cx[0] + 0.1, y, w: cwid[0] - 0.15, h: 0.72, valign: "middle", fontFace: BODY, bold: true, fontSize: 12, color: hl ? TEAL : NAVY, margin: 0 });
+    s.addText(r[1], { x: cx[1] + 0.1, y, w: cwid[1] - 0.15, h: 0.72, valign: "middle", fontFace: BODY, fontSize: 10.5, color: NAVY, margin: 0, lineSpacing: 13 });
+    s.addText(r[2], { x: cx[2] + 0.1, y, w: cwid[2] - 0.15, h: 0.72, valign: "middle", fontFace: BODY, fontSize: 10.5, color: MUTED, margin: 0, lineSpacing: 13 });
   });
-  s.addText("Meta em 18 meses: 500 veículos pagantes, ou R$ 2,34 mi de receita recorrente por ano (500 × R$ 390 × 12).", { x: 0.6, y: 6.0, w: 12, h: 0.35, fontFace: HEAD, italic: true, fontSize: 13, color: NAVY, margin: 0 });
-  band(s, "o cliente paga uma assinatura por veículo, e nossa receita cresce a cada caminhão conectado.", false);
-  note(s, "Modelo (35s). Assinatura por veiculo por mes, complementada por implantacao, integracoes, marketplace e servicos de IA. Com 500 veiculos pagantes chegamos a R$ 2,34 milhoes de receita recorrente anual.");
+  s.addText("Meta em 18 meses: 1.000 veículos pagantes, ou R$ 0,36 a 0,6 mi por ano de assinatura, mais 15% da economia comprovada.", { x: 0.6, y: 5.8, w: 12, h: 0.35, fontFace: HEAD, italic: true, fontSize: 13, color: NAVY, margin: 0 });
+  band(s, "o cliente paga pouco para entrar e divide conosco a economia que a IA provar.", false);
+  note(s, "Modelo (35s). Comparamos quatro formas de cobrar e recomendamos a hibrida: mensalidade menor, de R$ 29,90 a R$ 49,90 por veiculo conforme o tamanho da frota, mais 15% da economia comprovada. Os precos sao hipoteses nao validadas. Com 1.000 veiculos pagantes, a assinatura gera de R$ 0,36 a R$ 0,6 milhao por ano.");
 }
 
 /* 11 DIFERENCIAL */
 {
   const s = slide(false);
   kicker(s, "Diferencial competitivo");
-  title(s, "Não é mais um rastreador: é uma IA que age");
-  const cols = ["", "Rastreamento", "Telemetria", "TMS", "Vídeo", "FleetMind"];
-  const rows = [["Localização em tempo real", 1, 1, 0, 0, 1], ["Dados de condução e motor", 0, 1, 0, 0, 1], ["Gestão de fretes e operação", 0, 0, 1, 0, 1], ["Visão computacional (fadiga/risco)", 0, 0, 0, 1, 1], ["IA preditiva e generativa", 0, 0, 0, 0, 1], ["Agente que age e escala para humano", 0, 0, 0, 0, 1], ["Aprende com a rede de veículos", 0, 0, 0, 0, 1]];
-  const x0 = 0.6, c0 = 4.4, cw = 1.5, y0 = 1.95, rh = 0.44;
-  cols.forEach((c, i) => {
-    const x = i === 0 ? x0 : x0 + c0 + (i - 1) * cw, w = i === 0 ? c0 : cw;
-    s.addShape("rect", { x, y: y0, w, h: 0.55, fill: { color: i === 5 ? TEAL : NAVY }, line: { color: WHITE, width: 0.5 } });
-    s.addText(c, { x, y: y0, w, h: 0.55, align: "center", valign: "middle", fontFace: BODY, bold: true, fontSize: 11, color: WHITE, margin: 0 });
+  title(s, "O diferencial não é ter IA: é integrar, priorizar por R$ e provar a economia");
+  const x0 = 0.6, cw = [2.0, 5.0, 5.1], y0 = 2.0;
+  const hdr = ["", "Concorrentes (exemplo: Cobli)", "FleetMind"];
+  const rows = [
+    ["Cliente-alvo", "~5.000 clientes, 85% com frotas abaixo de 250 veículos", "Frotas de 100 a 2.000 veículos"],
+    ["Tecnologia", "Câmera com IA (fadiga, celular, distância) e chat com IA generativa no painel, previsto", "Integra vários fornecedores e prioriza os alertas por impacto em R$"],
+    ["Prova de economia", "Alegação de até 20% menos consumo, sem metodologia divulgada", "Economia medida com baseline auditável, com cobrança ligada ao resultado"],
+    ["Cobrança", "Não divulgada", "Mensalidade menor mais 15% da economia comprovada"],
+  ];
+  let cxs = [x0, x0 + cw[0], x0 + cw[0] + cw[1]];
+  hdr.forEach((h, i) => {
+    s.addShape("rect", { x: cxs[i], y: y0, w: cw[i], h: 0.5, fill: { color: i === 2 ? TEAL : (i === 1 ? NAVY : WHITE) }, line: { color: i === 0 ? WHITE : WHITE, width: 0.5 } });
+    s.addText(h, { x: cxs[i] + 0.1, y: y0, w: cw[i] - 0.2, h: 0.5, valign: "middle", fontFace: BODY, bold: true, fontSize: 12, color: WHITE, margin: 0 });
   });
   rows.forEach((r, ri) => {
-    const y = y0 + 0.55 + ri * rh;
-    s.addShape("rect", { x: x0, y, w: c0, h: rh, fill: { color: ri % 2 ? GRAY_BG : WHITE }, line: { color: GRAY_LN, width: 0.5 } });
-    s.addText(r[0], { x: x0 + 0.12, y, w: c0 - 0.2, h: rh, valign: "middle", fontFace: BODY, fontSize: 12, color: NAVY, margin: 0 });
-    for (let ci = 1; ci <= 5; ci++) {
-      const x = x0 + c0 + (ci - 1) * cw;
-      s.addShape("rect", { x, y, w: cw, h: rh, fill: { color: ci === 5 ? "E3F1F2" : (ri % 2 ? GRAY_BG : WHITE) }, line: { color: GRAY_LN, width: 0.5 } });
-      s.addText(r[ci] ? "✓" : "–", { x, y, w: cw, h: rh, align: "center", valign: "middle", fontFace: BODY, bold: true, fontSize: 14, color: r[ci] ? TEAL : "C3CCDD", margin: 0 });
-    }
+    const y = y0 + 0.5 + ri * 0.8;
+    r.forEach((cell, ci) => {
+      s.addShape("rect", { x: cxs[ci], y, w: cw[ci], h: 0.8, fill: { color: ci === 2 ? "E3F1F2" : (ci === 0 ? GRAY_BG : WHITE) }, line: { color: GRAY_LN, width: 0.5 } });
+      s.addText(cell, { x: cxs[ci] + 0.12, y, w: cw[ci] - 0.24, h: 0.8, valign: "middle", fontFace: BODY, bold: ci === 0, fontSize: ci === 0 ? 12 : 11.5, color: ci === 2 ? NAVY : (ci === 0 ? NAVY : MUTED), margin: 0, lineSpacing: 14 });
+    });
   });
-  s.addText("Gestão aumentada: o gestor lidera e decide, a IA monitora e recomenda 24 horas por dia. Não substitui o gestor, amplia a capacidade dele.", { x: 0.6, y: 5.65, w: 12, h: 0.5, fontFace: HEAD, italic: true, fontSize: 13, color: NAVY, margin: 0, lineSpacing: 17 });
-  s.addText("TMS = sistema de gestão de transporte · Telemetria = dados do motor e da condução · Vídeo = câmeras com IA que detectam fadiga e risco", { x: 0.6, y: 6.15, w: 12, h: 0.25, fontFace: BODY, fontSize: 10, color: MUTED, margin: 0 });
-  band(s, "rastreadores mostram onde o veículo está; o FleetMind decide e age.", false, 6.5);
-  note(s, "Diferencial (35s). Cada categoria resolve uma parte do problema. O FleetMind combina tudo e adiciona o agente que age e a inteligencia coletiva. O modelo e de gestao aumentada: a IA apoia o gestor, nao o substitui.");
+  s.addText("Como a Cobli caminha para IA generativa, o nosso diferencial é integração multifornecedor, priorização por R$ e prova de economia. A levantar: Michelin Connected Fleet, Sascar e Geotab.", { x: 0.6, y: 5.8, w: 12, h: 0.4, fontFace: HEAD, italic: true, fontSize: 12.5, color: NAVY, margin: 0, lineSpacing: 16 });
+  s.addText("Baseline auditável = medição antes do uso, que serve de comparação para provar a economia. Fontes: Convergência Digital (jun/2024) e Mundo Logística (set/2022).", { x: 0.6, y: 6.2, w: 12, h: 0.25, fontFace: BODY, fontSize: 10, color: MUTED, margin: 0 });
+  band(s, "outros mostram dados e câmeras; o FleetMind prova em reais quanto a frota economizou.", false, 6.5);
+  note(s, "Diferencial (35s). O concorrente mais documentado e a Cobli, forte em frotas pequenas e camera com IA. Como ela caminha para IA generativa, nosso diferencial nao pode ser ter IA. E integrar varios fornecedores, priorizar alertas por impacto em reais e provar a economia com baseline auditavel. A alegacao de ate 20% menos consumo e do fornecedor e nao tem metodologia divulgada.");
 }
 
 /* 12 ROADMAP */
@@ -350,7 +378,7 @@ function src(s, t, dark) {
   const s = slide(false);
   kicker(s, "Validação e implantação");
   title(s, "Do protótipo funcionando ao ROI comprovado");
-  const st = [["Hoje", "Protótipo no ar: dashboard, API, IA e agente", true], ["Piloto", "20 a 50 veículos, 90 a 120 dias", false], ["Medição", "Antes × depois: risco, combustível, manutenção", false], ["Prova de ROI", "Resultado documentado com o cliente", false], ["Escala", "Contrato Enterprise e expansão", false]];
+  const st = [["Hoje", "Protótipo no ar: dashboard, API, IA e agente", true], ["Piloto", "20 a 50 veículos, 90 a 120 dias", false], ["Medição", "Antes × depois: diesel, manutenção, paradas e custo de servir", false], ["Prova de ROI", "Resultado documentado com o cliente", false], ["Escala", "Contrato Enterprise e expansão", false]];
   s.addShape("line", { x: 1.6, y: 2.65, w: 9.9, h: 0, line: { color: GRAY_LN, width: 2 } });
   st.forEach((r, i) => {
     const cx = 0.6 + i * 2.5;
@@ -379,7 +407,7 @@ function src(s, t, dark) {
   const r = [
     ["Adoção e confiança", "Motoristas e gestores podem desconfiar de decisões da IA.", "Piloto com métricas abertas, humano com decisão final e IA que recomenda antes de agir sozinha."],
     ["Qualidade e integração de dados", "Telemetria de fabricantes diferentes e conectividade instável nas rodovias.", "APIs abertas com parceiros, MVP só com dados essenciais e verificação cruzada de fontes externas, como redes sociais."],
-    ["Responsabilidade e regulação", "Quem responde por uma recomendação da IA? Dados de motoristas exigem a lei de proteção de dados (LGPD).", "Humano decide nas ações críticas, contratos claros e conformidade com a LGPD desde o desenho."],
+    ["Dados do motorista e responsabilidade", "Dados de motorista são pessoais (LGPD) e podem ser usados de forma punitiva. Quem responde por uma recomendação da IA?", "Dados usados para orientar, não para punir. Minimização, explicação com evidência e decisão final humana."],
   ];
   r.forEach((c, i) => {
     const x = 0.6 + i * 4.1;
@@ -397,12 +425,12 @@ function src(s, t, dark) {
 {
   const s = slide(true);
   kicker(s, "O investimento", true);
-  title(s, "Buscamos R$ 1,5 mi para provar o ROI e chegar a 500 veículos", true);
+  title(s, "Buscamos R$ 1,5 mi para provar o ROI e chegar a 1.000 veículos", true);
   s.addChart(p.charts.DOUGHNUT, [{ name: "Uso", labels: ["Produto e IA", "Pilotos e implantação", "Comercial e parcerias", "Infra, segurança e LGPD", "Reserva"], values: [40, 25, 20, 10, 5] }], {
     x: 0.5, y: 2.0, w: 5.2, h: 4.1, holeSize: 55, chartColors: [TEAL, TEAL_L, "7FA8B5", "AFC3CC", "5A6C8C"],
     showLegend: true, legendPos: "b", legendColor: WHITE, legendFontSize: 11, showPercent: true, showValue: false, dataLabelColor: NAVY, dataLabelFontSize: 11, dataBorder: { pt: 1, color: NAVY },
   });
-  const m = [["3 pilotos", "pelo menos 100 veículos em operação real"], ["500 veículos pagantes", "R$ 2,34 mi de receita recorrente anual"], ["ROI medido e publicado", "resultado de antes × depois com clientes"], ["1 parceria estratégica", "montadora, telemetria ou seguradora"]];
+  const m = [["3 pilotos", "pelo menos 100 veículos em operação real"], ["1.000 veículos pagantes", "R$ 0,36 a 0,6 mi por ano de assinatura, mais 15% da economia"], ["ROI medido e publicado", "resultado de antes × depois com clientes"], ["1 parceria estratégica", "montadora, telemetria ou seguradora"]];
   s.addText("Metas em 18 meses", { x: 6.2, y: 2.0, w: 6, h: 0.4, fontFace: HEAD, bold: true, fontSize: 17, color: TEAL_L, margin: 0 });
   m.forEach((r, i) => {
     const y = 2.5 + i * 0.87;
@@ -410,9 +438,9 @@ function src(s, t, dark) {
     s.addText(r[0], { x: 6.4, y: y + 0.06, w: 6.1, h: 0.35, fontFace: HEAD, bold: true, fontSize: 15, color: WHITE, margin: 0 });
     s.addText(r[1], { x: 6.4, y: y + 0.41, w: 6.1, h: 0.3, fontFace: BODY, fontSize: 12, color: MUTED_D, margin: 0 });
   });
-  band(s, "R$ 1,5 mi leva o produto de protótipo a 500 veículos pagantes em 18 meses.", true, 6.25);
+  band(s, "R$ 1,5 mi leva o produto de protótipo a 1.000 veículos pagantes e ao ROI provado em 18 meses.", true, 6.25);
   src(s, "Rodada = captação de recursos de investidores. Proposta da equipe, a ajustar na negociação. Uso: produto e IA 40%, pilotos 25%, comercial 20%, infraestrutura e segurança 10%, reserva 5%.", true);
-  note(s, "O pedido (45s). Propomos uma rodada de R$ 1,5 milhao para 18 meses. 40% em produto e IA, 25% em pilotos e implantacao, 20% em comercial e parcerias. Ao final: 3 pilotos, 500 veiculos pagantes e o ROI medido. O valor e uma proposta da equipe, aberta a negociacao.");
+  note(s, "O pedido (45s). Propomos uma rodada de R$ 1,5 milhao para 18 meses. 40% em produto e IA, 25% em pilotos e implantacao, 20% em comercial e parcerias. Ao final: 3 pilotos, 1.000 veiculos pagantes e o ROI medido. O valor e uma proposta da equipe, aberta a negociacao.");
 }
 
 /* 15 ENCERRAMENTO */
