@@ -10,6 +10,9 @@ interativo com um "Super Agente" de IA para perguntas em linguagem natural.
 - **[BUSINESS_MODEL.md](BUSINESS_MODEL.md)** — Business Model Canvas oficial
   (persona, segmentos, receita, parceiros), usado para orientar as decisões
   de produto deste protótipo.
+- **[docs/PLANO_UNIFICADO.md](docs/PLANO_UNIFICADO.md)** — plano de inovação
+  empresarial aplicada (NOVA SBE | ITL): problema, metodologia, diagnóstico,
+  proposta de solução, modelo SaaS/success fee e plano de piloto.
 - **[pitch/](pitch/)** — pitch executivo de 5 minutos (deck `.pptx` +
   roteiro/evidências/ROI) para apresentar o FleetMind AI a investidores,
   transportadoras e parceiros.
