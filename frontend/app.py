@@ -144,9 +144,104 @@ except requests.exceptions.ConnectionError:
     )
     st.stop()
 
-tab_kanban, tab_roi, tab_overview, tab_vehicles, tab_drivers, tab_alerts, tab_copilot = st.tabs(
-    ["🗂️ Painel Operacional", "💰 Economia & ROI", "📊 Visão Geral", "🚛 Veículos", "🧑‍✈️ Motoristas", "🚨 Alertas", "🚚 Copiloto de IA"]
+tab_kanban, tab_roi, tab_esg, tab_overview, tab_vehicles, tab_drivers, tab_alerts, tab_copilot = st.tabs(
+    ["🗂️ Painel Operacional", "💰 Economia & ROI", "🌱 ESG", "📊 Visão Geral", "🚛 Veículos", "🧑‍✈️ Motoristas", "🚨 Alertas", "🚚 Copiloto de IA"]
 )
+
+# ---------------- ESG ----------------
+with tab_esg:
+    st.subheader("ESG: emissões de carbono e impacto ambiental")
+    st.caption(
+        "Escopo 1 (diesel). Km, viagens e alertas vêm dos dados da frota; fator de emissão, consumo e percentuais "
+        "de redução são **premissas editáveis**. Substitua o fator pelo oficial do Programa Brasileiro GHG Protocol "
+        "antes de divulgar."
+    )
+
+    @st.cache_data(ttl=300)
+    def load_esg_data():
+        return (
+            pd.DataFrame(api_get("/trips", {"limit": 5000})),
+            pd.DataFrame(api_get("/alerts", {"only_open": False, "limit": 5000})),
+            pd.DataFrame(api_get("/vehicles")),
+        )
+
+    e_trips, e_alerts, e_veh = load_esg_data()
+
+    with st.expander("⚙️ Premissas ambientais", expanded=False):
+        p1, p2, p3 = st.columns(3)
+        ef = p1.number_input("Fator de emissão do diesel (kgCO₂e/l)", 1.0, 4.0, 2.6, 0.05)
+        e_kml = p2.number_input("Consumo médio (km/l)", 1.5, 5.0, 2.8, 0.1, key="esg_kml")
+        idle_lh = p3.number_input("Consumo em marcha lenta (l/h)", 0.5, 6.0, 2.5, 0.1)
+        q1, q2 = st.columns(2)
+        e_diesel = q1.number_input("Preço do diesel (R$/l)", 4.0, 10.0, 6.2, 0.1, key="esg_diesel")
+        tree = q2.number_input("CO₂ absorvido por árvore (kg/ano)", 5.0, 60.0, 22.0, 1.0)
+
+    esg_scn = st.radio("Cenário", ["Conservador", "Base", "Otimista"], index=1, horizontal=True, key="esg_scn")
+    g = {"Conservador": (0.02, 0.10), "Base": (0.04, 0.20), "Otimista": (0.07, 0.35)}[esg_scn]
+
+    e_trips["start_time"] = pd.to_datetime(e_trips["start_time"], errors="coerce")
+    yrs = max((e_trips["start_time"].max() - e_trips["start_time"].min()).days / 365, 0.1)
+    km_y = e_trips["distance_km"].sum() / yrs
+    trips_y = len(e_trips) / yrs
+    n_v = len(e_veh)
+    idle_h = e_trips["delay_minutes"].sum() / yrs / 60
+
+    fuel_l = km_y / e_kml
+    base_t = fuel_l * ef / 1000
+    saved_l = fuel_l * g[0] + idle_h * idle_lh * g[1]
+    saved_t = saved_l * ef / 1000
+    new_t = base_t - saved_t
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Emissões (linha de base)", f"{base_t:,.0f} tCO₂e/ano")
+    m2.metric("Intensidade", f"{base_t*1000/km_y:,.3f} kgCO₂e/km")
+    m3.metric("CO₂e evitado", f"{saved_t:,.1f} t/ano", delta=f"-{saved_t/base_t*100:.1f}%", delta_color="inverse")
+    m4.metric("Árvores equivalentes", f"{saved_t*1000/tree:,.0f}/ano")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("**Emissões antes e depois (tCO₂e/ano)**")
+        ba = pd.DataFrame({"Situação": ["Sem FleetMind", "Com FleetMind"], "tCO₂e": [base_t, new_t]})
+        fig_ba = px.bar(ba, x="Situação", y="tCO₂e", text_auto=".0f", color="Situação",
+                        color_discrete_map={"Sem FleetMind": FM_GRAY_TEXT, "Com FleetMind": FM_TEAL})
+        fig_ba.update_layout(height=320, showlegend=False, margin=dict(l=0, r=0, t=10, b=0))
+        st.plotly_chart(fig_ba, use_container_width=True)
+    with c2:
+        st.markdown("**CO₂e evitado por cenário (t/ano)**")
+        rows = []
+        for name, (fc, ic) in {"Conservador": (0.02, 0.10), "Base": (0.04, 0.20), "Otimista": (0.07, 0.35)}.items():
+            rows.append({"Cenário": name, "tCO₂e evitadas": (fuel_l * fc + idle_h * idle_lh * ic) * ef / 1000})
+        fig_sc = px.bar(pd.DataFrame(rows), x="Cenário", y="tCO₂e evitadas", text_auto=".1f",
+                        color_discrete_sequence=[FM_TEAL])
+        fig_sc.update_layout(height=320, margin=dict(l=0, r=0, t=10, b=0))
+        st.plotly_chart(fig_sc, use_container_width=True)
+
+    st.markdown("**Índices da operação**")
+    i1, i2, i3, i4 = st.columns(4)
+    i1.metric("Distância", f"{km_y/1e6:,.2f} mi km/ano")
+    i2.metric("Diesel consumido", f"{fuel_l/1e6:,.2f} mi l/ano")
+    i3.metric("Por viagem", f"{base_t*1000/trips_y:,.0f} kgCO₂e")
+    i4.metric("Por veículo", f"{base_t/n_v:,.1f} tCO₂e/ano")
+
+    j1, j2, j3 = st.columns(3)
+    j1.metric("Diesel não consumido", f"{saved_l:,.0f} l/ano")
+    j2.metric("Economia em diesel", f"R$ {saved_l*e_diesel/1e3:,.0f} mil/ano")
+    j3.metric("Marcha lenta em atrasos", f"{idle_h:,.0f} h/ano")
+
+    st.markdown("**Sinais que apoiam a redução (alertas por ano)**")
+    cnt = e_alerts["type"].value_counts() / yrs
+    sig = pd.DataFrame({
+        "Alerta": [t.replace("_", " ").capitalize() for t in cnt.index],
+        "Ocorrências/ano": cnt.values.round(0),
+    })
+    st.dataframe(sig, use_container_width=True, hide_index=True)
+
+    st.caption(
+        "Social e governança: alertas de fadiga e eventos críticos geram ação preventiva, e toda decisão do agente "
+        "fica registrada com autor e horário (aba Painel Operacional). Fora deste cálculo: Escopo 2 e 3, emissões do "
+        "próprio FleetMind e poluentes como NOx e material particulado. A base é sintética; valide os percentuais "
+        "no piloto de 90 a 120 dias."
+    )
 
 # ---------------- ECONOMIA & ROI ----------------
 with tab_roi:

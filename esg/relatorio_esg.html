@@ -1,0 +1,149 @@
+<title>Relatório ESG FleetMind</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: relatório de coluna única, números de emissão em destaque, tabelas e barras simples. */
+:root{
+  --bg:#F5F8F8; --surface:#FFFFFF; --surface-2:#E9EEF2; --border:#D3DCE2;
+  --ink:#001028; --muted:#4A5560; --teal:#007880; --teal-ink:#00565C; --teal-tint:#DFF0F1;
+  --amber:#9A5A12; --amber-tint:#F6EBDC;
+  --f-display:'Fraunces',Georgia,serif; --f-body:'Public Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0A1420; --surface:#0F1D2E; --surface-2:#142538; --border:#233649;
+  --ink:#EAF1F4; --muted:#9FB1C0; --teal:#2DBBC3; --teal-ink:#7ADCE1; --teal-tint:#0F2B2E;
+  --amber:#E2A663; --amber-tint:#2B2013; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A1420; --surface:#0F1D2E; --surface-2:#142538; --border:#233649;
+  --ink:#EAF1F4; --muted:#9FB1C0; --teal:#2DBBC3; --teal-ink:#7ADCE1; --teal-tint:#0F2B2E;
+  --amber:#E2A663; --amber-tint:#2B2013; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:3rem 5rem}
+.wrap{max-width:860px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:2.3rem;line-height:1.12}
+h2{font-size:1.45rem;margin-bottom:.4rem}
+h3{font-size:1.05rem}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-ink)}
+.lede{color:var(--muted);max-width:66ch;margin:.7rem 0 0}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem 1.6rem;margin-top:1.4rem;padding-top:1.1rem;border-top:1px solid var(--border);font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+section{margin-top:3rem}
+section>p{max-width:68ch;color:var(--muted);margin:.2rem 0 1.1rem}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.9rem;margin-top:1.8rem}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;min-width:0}
+.kpi .n{font-family:var(--f-display);font-size:2rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .u{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);display:block;margin-top:.2rem}
+.kpi.hl{background:var(--teal);border-color:var(--teal)}
+.kpi.hl .n,.kpi.hl .u{color:#fff}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:560px}
+th,td{text-align:left;padding:.65rem .9rem;border-bottom:1px solid var(--border);font-size:.92rem;vertical-align:top}
+th{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-weight:600;white-space:nowrap}
+.tag{font-family:var(--f-mono);font-size:.66rem;font-weight:600;letter-spacing:.04em;padding:.12rem .5rem;border-radius:999px;white-space:nowrap}
+.tag.f{background:var(--teal-tint);color:var(--teal-ink)}
+.tag.h{background:var(--amber-tint);color:var(--amber)}
+.bars{display:grid;gap:.9rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem}
+.bar{display:grid;grid-template-columns:8.5rem 1fr 7rem;gap:.8rem;align-items:center;font-size:.9rem}
+.bar .track{background:var(--surface-2);border-radius:4px;height:22px;overflow:hidden}
+.bar .fill{background:var(--teal);height:100%;border-radius:4px}
+.bar .v{font-family:var(--f-mono);font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.2rem;min-width:0}
+.card p{margin:.4rem 0 0;color:var(--muted);font-size:.92rem}
+.note{background:var(--amber-tint);border-radius:10px;padding:.9rem 1.1rem;font-size:.9rem;color:var(--ink);margin-top:1rem}
+footer{margin-top:3.5rem;padding-top:1.2rem;border-top:1px solid var(--border);color:var(--muted);font-size:.82rem}
+@media(max-width:560px){h1{font-size:1.8rem}.bar{grid-template-columns:1fr;gap:.3rem}.bar .v{text-align:left}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">FleetMind AI · Relatório ESG</span>
+  <h1>Emissões de carbono e impactos ambientais da operação de frota</h1>
+  <p class="lede">Linha de base de emissões (Escopo 1, diesel) e a redução que o FleetMind AI projeta, calculadas sobre a base de dados da frota de demonstração. Valores medidos aparecem como fato; reduções são hipóteses a validar em piloto.</p>
+  <div class="meta"><span><b>Frota</b> 120 veículos</span><span><b>Período</b> 12 meses, 4.000 viagens</span><span><b>Escopo</b> 1 · combustão móvel</span><span><b>Base</b> dados sintéticos</span></div>
+</header>
+
+<div class="kpis">
+  <div class="kpi"><span class="n">4.176 t</span><span class="u">CO₂e por ano (linha de base)</span></div>
+  <div class="kpi"><span class="n">0,929 kg</span><span class="u">CO₂e por km rodado</span></div>
+  <div class="kpi"><span class="n">34,8 t</span><span class="u">CO₂e por veículo por ano</span></div>
+  <div class="kpi hl"><span class="n">−168,5 t</span><span class="u">CO₂e/ano evitadas, cenário Base</span></div>
+</div>
+
+<section>
+  <h2>1. Índices de emissão da linha de base</h2>
+  <p>Emissões do diesel queimado pela frota em um ano. O consumo é calculado a partir dos km rodados e do consumo médio assumido.</p>
+  <div class="tbl"><table>
+    <tr><th>Índice</th><th>Valor</th><th>Como foi obtido</th><th>Natureza</th></tr>
+    <tr><td>Distância percorrida</td><td class="num">4.497.606 km/ano</td><td>Soma de distance_km das viagens</td><td><span class="tag f">DADO DA FROTA</span></td></tr>
+    <tr><td>Distância média por viagem</td><td class="num">1.124 km</td><td>Média das 4.000 viagens</td><td><span class="tag f">DADO DA FROTA</span></td></tr>
+    <tr><td>Consumo de diesel</td><td class="num">1.606.288 l/ano</td><td>km ÷ 2,8 km/l</td><td><span class="tag h">PREMISSA</span></td></tr>
+    <tr><td>Emissões totais (Escopo 1)</td><td class="num">4.176 tCO₂e/ano</td><td>litros × 2,6 kgCO₂e/l</td><td><span class="tag h">PREMISSA</span></td></tr>
+    <tr><td>Intensidade por km</td><td class="num">0,929 kgCO₂e/km</td><td>emissões ÷ km</td><td><span class="tag h">PREMISSA</span></td></tr>
+    <tr><td>Intensidade por viagem</td><td class="num">1.044 kgCO₂e</td><td>emissões ÷ 4.000 viagens</td><td><span class="tag h">PREMISSA</span></td></tr>
+    <tr><td>Intensidade por veículo</td><td class="num">34,8 tCO₂e/ano</td><td>emissões ÷ 120 veículos</td><td><span class="tag h">PREMISSA</span></td></tr>
+    <tr><td>Horas de atraso (motor ligado, parado)</td><td class="num">1.144 h/ano</td><td>Soma de delay_minutes ÷ 60</td><td><span class="tag f">DADO DA FROTA</span></td></tr>
+  </table></div>
+  <div class="note">O fator de 2,6 kgCO₂e por litro de diesel é uma premissa de trabalho. O diesel vendido no Brasil é uma mistura com biodiesel, e o fator oficial deve ser lido na planilha mais recente do Programa Brasileiro GHG Protocol antes de qualquer divulgação. O relatório muda de forma proporcional quando o fator muda.</div>
+</section>
+
+<section>
+  <h2>2. Impacto ambiental positivo por cenário</h2>
+  <p>Redução anual de emissões com o FleetMind AI em operação. Cada cenário combina menos combustível (rotas, condução, trânsito e clima) e menos marcha lenta em atrasos.</p>
+  <div class="bars" role="img" aria-label="Toneladas de CO2e evitadas por ano: 84,3 no conservador, 168,5 no base, 294,9 no otimista">
+    <div class="bar"><span>Conservador</span><div class="track"><div class="fill" style="width:28.6%"></div></div><span class="v">84,3 t/ano</span></div>
+    <div class="bar"><span>Base</span><div class="track"><div class="fill" style="width:57.1%"></div></div><span class="v">168,5 t/ano</span></div>
+    <div class="bar"><span>Otimista</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="v">294,9 t/ano</span></div>
+  </div>
+  <div class="tbl" style="margin-top:1rem"><table>
+    <tr><th>Indicador</th><th>Conservador</th><th>Base</th><th>Otimista</th></tr>
+    <tr><td>Redução de combustível</td><td class="num">2%</td><td class="num">4%</td><td class="num">7%</td></tr>
+    <tr><td>Redução de marcha lenta</td><td class="num">10%</td><td class="num">20%</td><td class="num">35%</td></tr>
+    <tr><td>Diesel não consumido</td><td class="num">32.412 l</td><td class="num">64.824 l</td><td class="num">113.441 l</td></tr>
+    <tr><td>CO₂e evitado</td><td class="num">84,3 t</td><td class="num">168,5 t</td><td class="num">294,9 t</td></tr>
+    <tr><td>Queda da emissão total</td><td class="num">2,0%</td><td class="num">4,0%</td><td class="num">7,1%</td></tr>
+    <tr><td>Intensidade resultante</td><td class="num">0,910 kg/km</td><td class="num">0,891 kg/km</td><td class="num">0,863 kg/km</td></tr>
+    <tr><td>Economia de diesel (R$ 6,20/l)</td><td class="num">R$ 201 mil</td><td class="num">R$ 402 mil</td><td class="num">R$ 703 mil</td></tr>
+    <tr><td>Árvores equivalentes por ano*</td><td class="num">3.830</td><td class="num">7.661</td><td class="num">13.407</td></tr>
+  </table></div>
+  <p style="margin-top:.8rem;font-size:.84rem">*Equivalência ilustrativa de 22 kg de CO₂ absorvidos por árvore por ano. Serve para comunicação e não substitui inventário.</p>
+</section>
+
+<section>
+  <h2>3. De onde vêm as reduções</h2>
+  <div class="grid2">
+    <div class="card"><h3>Rotas e desvios</h3><p>O agente recalcula a rota diante de acidente, via interditada ou clima severo, e evita quilômetros rodados em congestionamento. Na base: 23 alertas de clima severo por ano.</p></div>
+    <div class="card"><h3>Condução eficiente</h3><p>Alertas de fadiga, velocidade e frenagem brusca orientam o motorista em tempo real. Na base: 1.429 alertas de fadiga por ano, que também indicam condução irregular.</p></div>
+    <div class="card"><h3>Marcha lenta e atrasos</h3><p>Avisar o cliente e replanejar a entrega reduz espera com motor ligado. Na base: 1.144 horas de atraso por ano.</p></div>
+    <div class="card"><h3>Manutenção preditiva</h3><p>Motor fora da faixa consome mais e polui mais. Na base: 135 alertas de temperatura e 8 de pressão de óleo por ano. O ganho de consumo por manutenção não foi quantificado aqui.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>4. Indicadores sociais e de governança</h2>
+  <p>Acompanham o ambiental no mesmo relatório. Os números são contagens da base de demonstração.</p>
+  <div class="grid2">
+    <div class="card"><h3>Social: segurança</h3><p>1.429 alertas de fadiga e 143 alertas críticos por ano alimentam a ação preventiva. Acidentes com caminhões respondem por 53% das mortes em rodovias federais (PRF, 2024).</p></div>
+    <div class="card"><h3>Governança: rastreabilidade</h3><p>Toda decisão do agente fica registrada com autor (IA, operador ou motorista) e horário. Casos críticos e sem resposta do motorista escalam para um operador humano.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>5. Metodologia e limites</h2>
+  <div class="tbl"><table>
+    <tr><th>Item</th><th>Valor usado</th><th>Natureza</th></tr>
+    <tr><td>Fator de emissão do diesel</td><td class="num">2,6 kgCO₂e/l</td><td><span class="tag h">PREMISSA, substituir pelo fator oficial</span></td></tr>
+    <tr><td>Consumo médio</td><td class="num">2,8 km/l</td><td><span class="tag h">PREMISSA</span></td></tr>
+    <tr><td>Consumo em marcha lenta</td><td class="num">2,5 l/h</td><td><span class="tag h">PREMISSA</span></td></tr>
+    <tr><td>Percentuais de redução</td><td class="num">2–7% combustível</td><td><span class="tag h">HIPÓTESE, validar em piloto</span></td></tr>
+    <tr><td>Preço do diesel</td><td class="num">R$ 6,20/l</td><td><span class="tag h">PREMISSA</span></td></tr>
+  </table></div>
+  <div class="note">A base é sintética e serve para demonstrar o método. Os números de uma transportadora real dependem dos km, do consumo e do fator de emissão dela. Ficam fora deste relatório as emissões da operação do próprio FleetMind (nuvem, dispositivos), as emissões de Escopo 2 e 3 do cliente e poluentes locais como NOx e material particulado. O piloto de 90 a 120 dias deve medir litros reais antes e depois.</div>
+</section>
+
+<footer>FleetMind AI · Relatório ESG da base de demonstração. Referências: PRF, Agência Brasil (2024); CNT/NTC&amp;Logística (combustível entre 30% e 35% do custo operacional); Programa Brasileiro GHG Protocol para o fator de emissão.</footer>
+</div>
